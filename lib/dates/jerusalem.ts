@@ -39,6 +39,14 @@ export function subtractDaysFromDateString(
   return getJerusalemDateString(subDays(parseISO(dateStr), days));
 }
 
+/** True if the date is Fri or Sat in Asia/Jerusalem (Israeli weekend). */
+export function isWeekend(dateStr: string): boolean {
+  // "i" = ISO weekday 1..7 (Mon..Sun) — easier reasoning across DST than getDay()
+  const iso = formatInTimeZone(parseISO(dateStr), JERUSALEM_TZ, "i");
+  // Fri = 5, Sat = 6
+  return iso === "5" || iso === "6";
+}
+
 export function isValidDateString(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const d = parseISO(value);

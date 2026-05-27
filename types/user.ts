@@ -1,7 +1,13 @@
 export interface UserProfile {
   email: string;
-  dailyCalorieTarget: number;
+  /** Sun–Thu target (Israeli workweek). */
+  weekdayCalorieTarget: number;
+  /** Fri–Sat target. */
+  weekendCalorieTarget: number;
   createdAt: Date;
 }
 
+export const DEFAULT_WEEKDAY_TARGET = 1600;
+export const DEFAULT_WEEKEND_TARGET = 1950;
+/** Legacy fallback. Profiles created before the split-target feature stored a single number. */
 export const DEFAULT_CALORIE_TARGET = 2000;

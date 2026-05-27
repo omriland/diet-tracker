@@ -7,7 +7,32 @@ import { toast } from "sonner";
 import { getClientDb } from "@/lib/firebase/client";
 import { userDoc } from "@/lib/firestore/paths";
 import { timestampToDate } from "@/lib/firestore/converters";
-import { DEFAULT_CALORIE_TARGET, type UserProfile } from "@/types/user";
+import {
+  DEFAULT_CALORIE_TARGET,
+  DEFAULT_WEEKDAY_TARGET,
+  DEFAULT_WEEKEND_TARGET,
+  type UserProfile,
+} from "@/types/user";
+import { isWeekend } from "@/lib/dates/jerusalem";
+
+function profileFromDoc(data: Record<string, unknown>): UserProfile {
+  const weekday =
+    (data.weekdayCalorieTarget as number | undefined) ??
+    (data.dailyCalorieTarget as number | undefined) ??
+    DEFAULT_WEEKDAY_TARGET;
+  const weekend =
+    (data.weekendCalorieTarget as number | undefined) ??
+    (data.dailyCalorieTarget as number | undefined) ??
+    DEFAULT_WEEKEND_TARGET;
+  return {
+    email: (data.email as string) ?? "",
+    weekdayCalorieTarget: weekday,
+    weekendCalorieTarget: weekend,
+    createdAt: timestampToDate(
+      data.createdAt as Parameters<typeof timestampToDate>[0]
+    ),
+  };
+}
 
 // null = not yet loaded; UserProfile = loaded
 export function useUserProfile(uid: string | undefined) {
@@ -23,13 +48,7 @@ export function useUserProfile(uid: string | undefined) {
         if (!snap.exists()) {
           setProfileData("not-found");
         } else {
-          const data = snap.data();
-          setProfileData({
-            email: (data.email as string) ?? "",
-            dailyCalorieTarget:
-              (data.dailyCalorieTarget as number) ?? DEFAULT_CALORIE_TARGET,
-            createdAt: timestampToDate(data.createdAt),
-          });
+          setProfileData(profileFromDoc(snap.data()));
         }
       },
       (error) => {
@@ -48,14 +67,14 @@ export function useUserProfile(uid: string | undefined) {
     return unsub;
   }, [uid]);
 
-  // Derived — avoids setState in effect for the !uid case
   const profile: UserProfile | null = (() => {
     if (!uid) return null;
     if (profileData === null) return null; // still loading
     if (profileData === "not-found") {
       return {
         email: "",
-        dailyCalorieTarget: DEFAULT_CALORIE_TARGET,
+        weekdayCalorieTarget: DEFAULT_WEEKDAY_TARGET,
+        weekendCalorieTarget: DEFAULT_WEEKEND_TARGET,
         createdAt: new Date(),
       };
     }
@@ -65,4 +84,18 @@ export function useUserProfile(uid: string | undefined) {
   const loading = uid ? profileData === null : false;
 
   return { profile, loading };
+}
+
+/**
+ * Pick the calorie target for a specific date based on the Israeli week.
+ * Falls back to the legacy default if profile is missing.
+ */
+export function getTargetForDate(
+  profile: UserProfile | null,
+  dateStr: string
+): number {
+  if (!profile) return DEFAULT_CALORIE_TARGET;
+  return isWeekend(dateStr)
+    ? profile.weekendCalorieTarget
+    : profile.weekdayCalorieTarget;
 }

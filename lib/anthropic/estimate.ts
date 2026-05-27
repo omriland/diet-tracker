@@ -15,8 +15,26 @@ function extractText(response: Anthropic.Message): string {
     .join("");
 }
 
+/**
+ * Pulls the first {...} block out of the model's response.
+ * The system prompt asks for raw JSON only, but we still strip code fences /
+ * leading commentary defensively so a stray preamble doesn't fail the parse.
+ */
+function extractJsonObject(raw: string): string {
+  const trimmed = raw.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]+?)\s*```/i);
+  const candidate = fenced ? fenced[1] : trimmed;
+  const start = candidate.indexOf("{");
+  const end = candidate.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error("No JSON object found in model response");
+  }
+  return candidate.slice(start, end + 1);
+}
+
 function parseEstimateJson(raw: string): MealEstimate {
-  const parsed = JSON.parse(raw);
+  const json = extractJsonObject(raw);
+  const parsed = JSON.parse(json);
   const validated = EstimateSchema.parse(parsed);
   const breakdownSum = validated.breakdown.reduce(
     (sum, item) => sum + item.calories,
@@ -42,18 +60,12 @@ async function callModel(mealText: string): Promise<MealEstimate> {
         name: "web_search",
         max_uses: 3,
         allowed_domains: WEB_SEARCH_ALLOWED_DOMAINS,
-        user_location: { type: "approximate", country: "IL" },
       },
     ],
-    messages: [
-      { role: "user", content: mealText },
-      { role: "assistant", content: "{" },
-    ],
+    messages: [{ role: "user", content: mealText }],
   });
 
-  const modelText = extractText(response);
-  const raw = `{${modelText}`;
-  return parseEstimateJson(raw);
+  return parseEstimateJson(extractText(response));
 }
 
 export async function estimateCalories(mealText: string): Promise<MealEstimate> {

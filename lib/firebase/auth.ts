@@ -5,7 +5,7 @@ import {
   type User,
 } from "firebase/auth";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
-import { DEFAULT_CALORIE_TARGET } from "@/types/user";
+import { DEFAULT_WEEKDAY_TARGET, DEFAULT_WEEKEND_TARGET } from "@/types/user";
 import { getClientAuth, getClientDb } from "./client";
 import { userDoc } from "@/lib/firestore/paths";
 
@@ -28,7 +28,8 @@ export async function ensureUserProfile(user: User): Promise<void> {
   if (!snap.exists()) {
     await setDoc(ref, {
       email: user.email ?? "",
-      dailyCalorieTarget: DEFAULT_CALORIE_TARGET,
+      weekdayCalorieTarget: DEFAULT_WEEKDAY_TARGET,
+      weekendCalorieTarget: DEFAULT_WEEKEND_TARGET,
       createdAt: serverTimestamp(),
     });
   }

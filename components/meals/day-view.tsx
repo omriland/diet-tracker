@@ -12,7 +12,10 @@ import { MealDetailSheet } from "./meal-detail-sheet";
 import { WeightTodayCard } from "@/components/weight/weight-today-card";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMealsForDate, useDayTotals } from "@/hooks/use-meals-for-date";
-import { useUserProfile } from "@/hooks/use-user-profile";
+import { getTargetForDate, useUserProfile } from "@/hooks/use-user-profile";
+import { useDayMeta } from "@/hooks/use-day-meta";
+import { SportToggle } from "./sport-toggle";
+import { SPORT_BONUS_KCAL } from "@/types/day-meta";
 import {
   addDaysToDateString,
   subtractDaysFromDateString,
@@ -38,7 +41,10 @@ export function DayView({ date }: DayViewProps) {
   const uid = user?.uid;
   const { profile } = useUserProfile(uid);
   const { bySlot, meals, loading } = useMealsForDate(uid, date);
-  const target = profile?.dailyCalorieTarget ?? 2000;
+  const { meta } = useDayMeta(uid, date);
+  const baseTarget = getTargetForDate(profile, date);
+  const sportBonus = meta?.sport ? meta.sportBonusKcal || SPORT_BONUS_KCAL : 0;
+  const target = baseTarget + sportBonus;
   const { consumed, remaining } = useDayTotals(meals, target);
 
   const [addSlot, setAddSlot] = useState<MealSlot | null>(null);
@@ -112,6 +118,14 @@ export function DayView({ date }: DayViewProps) {
             remaining={remaining}
           />
           {uid && <WeightTodayCard uid={uid} />}
+          {uid && (
+            <SportToggle
+              uid={uid}
+              date={date}
+              active={Boolean(meta?.sport)}
+              bonusKcal={meta?.sportBonusKcal ?? SPORT_BONUS_KCAL}
+            />
+          )}
           {MEAL_SLOTS.map(({ slot, label }) => (
             <MealSlotSection
               key={slot}

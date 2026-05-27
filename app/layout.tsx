@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { AbortErrorSilencer } from "@/components/providers/abort-error-silencer";
 import "./globals.css";
 
 const inter = Inter({
@@ -59,6 +60,9 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
+      <head>
+        <AbortErrorSilencer />
+      </head>
       <body className="min-h-full bg-background text-foreground">
         <AuthProvider>
           {children}

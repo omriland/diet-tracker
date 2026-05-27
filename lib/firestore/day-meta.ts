@@ -1,0 +1,74 @@
+import {
+  doc,
+  getDoc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  type DocumentData,
+} from "firebase/firestore";
+import { getClientDb } from "@/lib/firebase/client";
+import { dayMetaDoc } from "@/lib/firestore/paths";
+import { timestampToDate } from "@/lib/firestore/converters";
+import { type DayMeta, SPORT_BONUS_KCAL } from "@/types/day-meta";
+
+export function dayMetaFromDoc(date: string, data: DocumentData): DayMeta {
+  return {
+    date,
+    sport: Boolean(data.sport),
+    sportBonusKcal:
+      typeof data.sportBonusKcal === "number"
+        ? data.sportBonusKcal
+        : SPORT_BONUS_KCAL,
+    createdAt: timestampToDate(data.createdAt),
+    updatedAt: timestampToDate(data.updatedAt),
+  };
+}
+
+export function subscribeDayMeta(
+  uid: string,
+  date: string,
+  onData: (meta: DayMeta | null) => void,
+  onError?: (error: Error) => void
+) {
+  const ref = doc(getClientDb(), dayMetaDoc(uid, date));
+  return onSnapshot(
+    ref,
+    (snap) => {
+      onData(snap.exists() ? dayMetaFromDoc(date, snap.data()) : null);
+    },
+    (err) => onError?.(err)
+  );
+}
+
+/**
+ * Toggle the `sport` flag for a given date.
+ * Creates the doc on first write; updates in place thereafter.
+ * Bonus value is captured at toggle time so historical days stay consistent
+ * even if SPORT_BONUS_KCAL changes later.
+ */
+export async function setDayMetaSport(
+  uid: string,
+  date: string,
+  sport: boolean
+): Promise<void> {
+  const ref = doc(getClientDb(), dayMetaDoc(uid, date));
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    await updateDoc(ref, {
+      sport,
+      // Refresh the bonus value whenever the user enables sport for the day,
+      // but leave it untouched when disabling — preserves history.
+      ...(sport ? { sportBonusKcal: SPORT_BONUS_KCAL } : {}),
+      updatedAt: serverTimestamp(),
+    });
+  } else {
+    await setDoc(ref, {
+      date,
+      sport,
+      sportBonusKcal: SPORT_BONUS_KCAL,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
+}

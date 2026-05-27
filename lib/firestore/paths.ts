@@ -21,3 +21,11 @@ export function estimationCacheDoc(uid: string, normalizedText: string) {
 export function weightDoc(uid: string, date: string) {
   return `${weightsCol(uid)}/${date}`;
 }
+
+export function dayMetaCol(uid: string) {
+  return `users/${uid}/dayMeta`;
+}
+
+export function dayMetaDoc(uid: string, date: string) {
+  return `${dayMetaCol(uid)}/${date}`;
+}
