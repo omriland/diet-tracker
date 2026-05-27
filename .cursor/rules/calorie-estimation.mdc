@@ -1,0 +1,34 @@
+---
+description: Claude calorie estimation API — prompt, Zod, cache, retries
+globs: "{app/api/estimate/**,lib/anthropic/**,lib/estimation/**}"
+alwaysApply: false
+---
+
+# Calorie Estimation Engine
+
+This is the **most critical** subsystem. Full spec: `PRD.md` → "Calorie Estimation Engine".
+
+## API (`POST /api/estimate`)
+
+- Model: `claude-sonnet-4-6`
+- Tool: `web_search_20260209`, `max_uses: 3`, `allowed_domains` per PRD
+- **Assistant prefill** `{` to force JSON; reassemble `raw = "{" + modelText`
+- **Zod** validate before return; retry parse **once**; then error → client manual entry
+- Log (don't reject) if `sum(breakdown.calories) !== calories` (±1 kcal)
+
+## Cache flow (client or shared lib)
+
+1. Normalize: trim, collapse whitespace, lowercase
+2. `getDoc(estimationCache/{normalized})` — if &lt;30 days → `AI_CACHED`
+3. Else call API → write cache → `AI`
+
+## Persisted breakdown edits
+
+- Store `originalCalories`, `originalPortionGrams` on each row for linear scaling
+- `portionGrams === null` → direct calorie edit UI
+- Recompute meal `calories` = sum(breakdown); set `caloriesSource: MANUAL_BREAKDOWN_EDIT`
+
+## Cost
+
+- One-shot messages only (no history)
+- Never call Claude from the browser

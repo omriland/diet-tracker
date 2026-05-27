@@ -1,0 +1,27 @@
+---
+description: Next.js 15 App Router conventions for this project
+globs: app/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Next.js App Router
+
+## Routes (from PRD)
+
+- `/` — today view (default landing)
+- `/day/[date]` — `YYYY-MM-DD` day view
+- `/weight` — weight log + chart
+- `/settings` — daily calorie target
+- `app/api/estimate/route.ts` — POST only; Anthropic proxy
+
+## Patterns
+
+- Use Server Components for static shell; `"use client"` for Firestore listeners, bottom sheets, swipe nav, forms.
+- Colocate route-specific components under `components/` by domain (`meals/`, `weight/`, `layout/`).
+- API routes return typed JSON errors; never leak stack traces or API keys in responses.
+- Use `loading.tsx` / `error.tsx` per route where UX benefits; meal rows use inline optimistic state instead of full-page loading for estimates.
+
+## Avoid
+
+- Server Actions for Firestore writes (client SDK + rules is the chosen pattern).
+- Putting Firebase Admin or Anthropic SDK in client bundles.

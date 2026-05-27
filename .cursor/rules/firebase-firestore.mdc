@@ -1,0 +1,39 @@
+---
+description: Firestore data model, security, and client access patterns
+globs: "{lib/firebase/**,lib/firestore/**,firebase/**,**/*firebase*}"
+alwaysApply: false
+---
+
+# Firebase / Firestore
+
+## Collections (under `/users/{uid}/`)
+
+| Collection | Notes |
+|------------|-------|
+| `users/{uid}` | `dailyCalorieTarget`, profile fields |
+| `meals/{mealId}` | `date`, `slot`, `text`, `calories`, `breakdown[]`, `caloriesSource` |
+| `weights/{date}` | **Document ID = `YYYY-MM-DD`** — upsert = one entry per day |
+| `estimationCache/{normalizedText}` | **Document ID = normalized Hebrew text** |
+
+## Slots
+
+`BREAKFAST` | `LUNCH` | `DINNER` | `SNACK` — English labels in UI only.
+
+## Security
+
+```javascript
+allow read, write: if request.auth != null && request.auth.uid == uid;
+```
+
+Deploy rules only after Rules Playground tests. Optional: hardcode allowed UID.
+
+## Client patterns
+
+- `onSnapshot` for today/meals by `date`; unsubscribe on unmount.
+- Typed converters or mappers: Firestore camelCase fields match PRD (`reasoningHe`, `portionGrams`, etc.).
+- Composite index required: meals `(date, slot)`.
+
+## Do not
+
+- Store Anthropic responses without Zod validation.
+- Use client-computed "today" string for cross-midnight persistence without server alignment.

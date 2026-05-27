@@ -1,0 +1,34 @@
+---
+description: English LTR app shell with correct Hebrew meal text rendering
+globs: "**/*.{tsx,css}"
+alwaysApply: false
+---
+
+# Hebrew & RTL
+
+## App shell
+
+- **English, LTR** for all chrome: nav, labels, dates, settings, slot names (Breakfast, Lunch, Dinner, Snacks).
+- Do **not** set `dir="rtl"` on `<html>` or layout root.
+
+## Meal text only
+
+```tsx
+<span dir="auto" lang="he" className="text-end">
+  {meal.text}
+</span>
+```
+
+- Input: `dir="auto"`, `lang="he"`, appropriate `inputMode` / font for Hebrew.
+- Test mixed Hebrew/English and numerals on **iOS Safari** early.
+
+## Icons (from PRD)
+
+- ⓘ → reasoning, assumptions, editable breakdown
+- 🔗 when `searched: true` → sources
+- ⚠️ when `confidence: "low"` → clarification text
+
+## shadcn + Tailwind
+
+- Use existing design tokens; mobile-first spacing; bottom sheets for add/edit flows.
+- Calorie numbers stay **prominent** (LTR numerals even beside RTL text).

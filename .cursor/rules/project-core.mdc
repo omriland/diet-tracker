@@ -1,0 +1,31 @@
+---
+description: Core project context — read PRD and memory bank before building
+alwaysApply: true
+---
+
+# Diet Tracker — Core
+
+## Before coding
+
+1. Read `memory-bank/activeContext.md` and `memory-bank/progress.md`.
+2. For feature work, cross-check `PRD.md` and the relevant memory-bank file.
+3. Update `memory-bank/progress.md` when completing a build-plan milestone.
+
+## Non-negotiables
+
+- **Single user** — Firebase Auth; Firestore rules `request.auth.uid == uid`.
+- **English UI (LTR)** — Hebrew only in meal text inputs/display via `dir="auto"` / `lang="he"`.
+- **Dates** — Persist `YYYY-MM-DD` in **Asia/Jerusalem**; compute on server for writes, not client `Date` for boundaries.
+- **Secrets** — `ANTHROPIC_API_KEY` only in Route Handlers; never `NEXT_PUBLIC_*`.
+- **v1 scope** — Calories only; no macros, social, exercise, native apps.
+
+## Architecture
+
+- Client → Firestore for CRUD; server route **only** for `/api/estimate`.
+- Real-time Firestore listeners on today view; optimistic meal rows while estimating.
+
+## Quality bar
+
+- Mobile-first; test iPhone Safari gestures (swipe days).
+- Zod-validate LLM JSON before Firestore writes.
+- Minimal diff; match existing patterns once scaffold exists.

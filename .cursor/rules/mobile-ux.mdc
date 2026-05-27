@@ -1,0 +1,40 @@
+---
+description: Mobile-first UX — gestures, optimistic UI, bottom sheets
+globs: components/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Mobile-First UX
+
+## Targets
+
+- Log meal: **&lt;10s** from tap-+ to saved
+- Log weight: **&lt;5s**
+- FCP &lt;1.5s on 4G
+
+## Today view
+
+- Default route shows **today** (Asia/Jerusalem)
+- Day nav: **swipe** on mobile, **arrow buttons** on desktop
+- Four slots, **multiple entries** per slot
+- Progress bar: consumed / target, remaining kcal
+
+## Meal entry
+
+1. Optimistic row immediately (`...` calories)
+2. Spinner until estimate or cache returns
+3. On failure: retry + manual calorie override (FR-13, FR-14)
+
+## Weight
+
+- Bottom sheet: kg input (1 decimal), date default today
+- Graph: Recharts line; default range 90d; tap point for value
+- List: tap edit, swipe delete
+
+## Navigation
+
+- Fixed bottom nav: **Today | Weight | Settings**
+
+## Could (don't block v1)
+
+- PWA manifest, 7-day calorie average footer, graph range toggles beyond 90d default
