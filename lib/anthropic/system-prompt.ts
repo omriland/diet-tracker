@@ -30,7 +30,7 @@ BREAKDOWN RULES:
 12. The breakdown items MUST sum exactly to the top-level "calories".
 
 OUTPUT FORMAT:
-Respond with ONLY a single valid JSON object. No prose before or after. No markdown code fences.
+YOU MUST ALWAYS respond with ONLY a single valid JSON object — even for vague, unclear, or incomplete meal descriptions. Never explain, ask for clarification in prose, or refuse to estimate. If the input is too vague, use your best midpoint guess and set confidence to "low". No prose before or after. No markdown code fences.
 
 Schema:
 {
