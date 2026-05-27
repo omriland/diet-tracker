@@ -66,6 +66,72 @@ export async function createMealPending(
   return ref.id;
 }
 
+/**
+ * Single-write create with a full estimate already in hand.
+ * Use when the user previews the AI result before committing — no `pending`
+ * flicker, no two-phase write.
+ */
+export async function createMealFromEstimate(
+  uid: string,
+  params: {
+    date: string;
+    slot: MealSlot;
+    text: string;
+    estimate: MealEstimate;
+    source: CaloriesSource;
+  }
+): Promise<string> {
+  const { date, slot, text, estimate, source } = params;
+  const ref = await addDoc(collection(getClientDb(), mealsCol(uid)), {
+    date,
+    slot,
+    text,
+    calories: estimate.calories,
+    caloriesSource: source,
+    confidence: estimate.confidence,
+    searched: estimate.searched,
+    sources: estimate.sources,
+    reasoningHe: estimate.reasoningHe,
+    assumptionsHe: estimate.assumptionsHe,
+    breakdown: estimate.breakdown,
+    needsClarificationHe: estimate.needsClarificationHe,
+    foodCategory: estimate.foodCategory,
+    pending: false,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+/**
+ * Manual-entry fallback for when AI estimation fails outright. Stored without
+ * any AI metadata (no breakdown, no reasoning) so it's clearly user-entered.
+ */
+export async function createMealManual(
+  uid: string,
+  params: { date: string; slot: MealSlot; text: string; calories: number }
+): Promise<string> {
+  const ref = await addDoc(collection(getClientDb(), mealsCol(uid)), {
+    date: params.date,
+    slot: params.slot,
+    text: params.text,
+    calories: params.calories,
+    caloriesSource: "MANUAL",
+    confidence: null,
+    searched: false,
+    sources: [],
+    reasoningHe: null,
+    assumptionsHe: [],
+    breakdown: [],
+    needsClarificationHe: null,
+    foodCategory: null,
+    pending: false,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
 export async function applyEstimateToMeal(
   uid: string,
   mealId: string,

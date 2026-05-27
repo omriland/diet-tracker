@@ -22,7 +22,8 @@ import {
 } from "@/lib/dates/jerusalem";
 import {
   applyEstimateToMeal,
-  createMealPending,
+  createMealFromEstimate,
+  createMealManual,
   deleteMeal,
   updateMealBreakdown,
   updateMealManualCalories,
@@ -72,7 +73,7 @@ export function DayView({ date }: DayViewProps) {
     delta: 40,
   });
 
-  async function runEstimate(mealId: string, text: string) {
+  async function runEstimateAfterEdit(mealId: string, text: string) {
     if (!uid) return;
     try {
       const { estimate, source } = await fetchMealEstimate(uid, text);
@@ -86,16 +87,33 @@ export function DayView({ date }: DayViewProps) {
     }
   }
 
-  async function handleAddMeal(text: string) {
+  async function handleConfirmAdd(params: {
+    text: string;
+    estimate: Awaited<ReturnType<typeof fetchMealEstimate>>["estimate"];
+    source: "AI" | "AI_CACHED";
+  }) {
     if (!uid || !addSlot) return;
-    const mealId = await createMealPending(uid, { date, slot: addSlot, text });
-    void runEstimate(mealId, text);
+    await createMealFromEstimate(uid, {
+      date,
+      slot: addSlot,
+      ...params,
+    });
+  }
+
+  async function handleManualAdd(params: { text: string; calories: number }) {
+    if (!uid || !addSlot) return;
+    await createMealManual(uid, {
+      date,
+      slot: addSlot,
+      text: params.text,
+      calories: params.calories,
+    });
   }
 
   async function handleEditText(text: string) {
     if (!uid || !selectedMealId) return;
     await updateMealText(uid, selectedMealId, text);
-    void runEstimate(selectedMealId, text);
+    void runEstimateAfterEdit(selectedMealId, text);
   }
 
   return (
@@ -145,10 +163,12 @@ export function DayView({ date }: DayViewProps) {
       <AddMealSheet
         open={addSlot !== null}
         slot={addSlot}
+        uid={uid}
         onOpenChange={(open) => {
           if (!open) setAddSlot(null);
         }}
-        onSubmit={handleAddMeal}
+        onConfirm={handleConfirmAdd}
+        onManualSave={handleManualAdd}
       />
 
       <MealDetailSheet
@@ -175,7 +195,7 @@ export function DayView({ date }: DayViewProps) {
         }}
         onRetryEstimate={async () => {
           if (!selectedMeal) return;
-          await runEstimate(selectedMeal.id, selectedMeal.text);
+          await runEstimateAfterEdit(selectedMeal.id, selectedMeal.text);
         }}
       />
     </div>

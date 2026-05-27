@@ -36,10 +36,16 @@
   --color-secondary-foreground: var(--foreground);
   --color-accent-foreground: var(--accent-foreground);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-instrument-serif), "Iowan Old Style", "Apple Garamond", Georgia, serif;
+  /* Latin first, Hebrew sibling next: browsers consult later families only for
+     chars the earlier ones don't cover (Google Fonts provides unicode-range
+     metadata that makes this clean). */
+  --font-sans: var(--font-inter), var(--font-heebo), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-instrument-serif), var(--font-frank-ruhl-libre), "Iowan Old Style", "Apple Garamond", Georgia, serif;
   --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-heading: var(--font-instrument-serif), "Iowan Old Style", "Apple Garamond", Georgia, serif;
+  --font-heading: var(--font-instrument-serif), var(--font-frank-ruhl-libre), "Iowan Old Style", "Apple Garamond", Georgia, serif;
+  /* Direct handle for Hebrew-only contexts (rare; most cascading works automatically) */
+  --font-hebrew-sans: var(--font-heebo), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-hebrew-display: var(--font-frank-ruhl-libre), var(--font-instrument-serif), Georgia, serif;
 
   --radius-sm: 6px;
   --radius-md: 8px;

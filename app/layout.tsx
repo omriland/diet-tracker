@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import {
+  Inter,
+  Instrument_Serif,
+  JetBrains_Mono,
+  Heebo,
+  Frank_Ruhl_Libre,
+} from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { AbortErrorSilencer } from "@/components/providers/abort-error-silencer";
@@ -22,6 +28,30 @@ const instrumentSerif = Instrument_Serif({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
+});
+
+/**
+ * Hebrew UI font. Heebo is the Hebrew sibling of Inter — same proportions
+ * and feel, so mixed Hebrew/Latin text reads cleanly. Loaded with the hebrew
+ * subset only; the browser falls through to Heebo for chars not in Inter via
+ * the font stack + Google's unicode-range metadata.
+ */
+const heebo = Heebo({
+  variable: "--font-heebo",
+  subsets: ["hebrew", "latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+/**
+ * Hebrew display serif. Frank Ruhl Libre is the modern revival of the
+ * classic Hebrew newspaper face — pairs naturally with Instrument Serif.
+ */
+const frankRuhl = Frank_Ruhl_Libre({
+  variable: "--font-frank-ruhl-libre",
+  subsets: ["hebrew", "latin"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -58,7 +88,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} ${heebo.variable} ${frankRuhl.variable} h-full antialiased`}
     >
       <head>
         <AbortErrorSilencer />
