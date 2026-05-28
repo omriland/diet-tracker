@@ -26,10 +26,7 @@ export default function AppError({
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-6 px-6 pb-24 text-center">
-      <p
-        className="text-3xl italic"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
+      <p className="text-3xl italic">
         Something went sideways.
       </p>
       <p className="text-muted-foreground text-sm leading-relaxed">
