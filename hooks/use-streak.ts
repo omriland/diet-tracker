@@ -34,10 +34,7 @@ export function useStreak(uid: string | undefined): StreakResult {
   const [doneDates, setDoneDates] = useState<Set<string> | null>(null);
 
   useEffect(() => {
-    if (!uid) {
-      setDoneDates(new Set());
-      return;
-    }
+    if (!uid) return;
 
     const ref = collection(getClientDb(), dayMetaCol(uid));
     const q = query(
@@ -60,6 +57,10 @@ export function useStreak(uid: string | undefined): StreakResult {
 
     return unsub;
   }, [uid]);
+
+  if (!uid) {
+    return { streak: 0, todayDone: false, loading: false };
+  }
 
   if (doneDates === null) {
     return { streak: 0, todayDone: false, loading: true };
