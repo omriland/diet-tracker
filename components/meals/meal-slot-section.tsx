@@ -4,12 +4,20 @@ import { Plus } from "lucide-react";
 import { MealEntryRow } from "./meal-entry-row";
 import type { Meal, MealSlot } from "@/types/meal";
 
+const SLOT_EMOJI: Record<MealSlot, string> = {
+  BREAKFAST: "🥐",
+  LUNCH: "🥗",
+  DINNER: "🍽️",
+  SNACK: "🍫",
+};
+
 interface MealSlotSectionProps {
   label: string;
   slot: MealSlot;
   meals: Meal[];
   onAdd: (slot: MealSlot) => void;
   onSelectMeal: (meal: Meal) => void;
+  onShowDetail: (meal: Meal) => void;
 }
 
 export function MealSlotSection({
@@ -18,45 +26,38 @@ export function MealSlotSection({
   meals,
   onAdd,
   onSelectMeal,
+  onShowDetail,
 }: MealSlotSectionProps) {
   const isEmpty = meals.length === 0;
 
   return (
-    <section className="border-hairline border-t py-5">
+    <section className="border-b border-hairline py-4">
       <div className="flex items-center justify-between">
-        <h2
-          className="font-display text-xl"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
+        <h2 className="flex items-center gap-2 text-[17px] font-bold text-foreground">
+          <span aria-hidden>{SLOT_EMOJI[slot]}</span>
           {label}
         </h2>
         <button
           type="button"
           onClick={() => onAdd(slot)}
           aria-label={`Add to ${label}`}
-          className="text-muted-foreground hover:text-foreground hover:bg-subtle/40 inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-accent text-accent-foreground transition-opacity hover:opacity-90"
         >
-          <Plus className="h-4 w-4" strokeWidth={1.5} />
+          <Plus className="h-5 w-5" strokeWidth={2.5} />
         </button>
       </div>
 
-      <div className="mt-2">
+      <div className="mt-3">
         {isEmpty ? (
-          <button
-            type="button"
-            onClick={() => onAdd(slot)}
-            className="text-muted-foreground hover:text-foreground -mx-2 block w-full rounded-md px-2 py-2 text-start text-sm italic transition-colors"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            —
-          </button>
+          <p className="text-sm text-muted-foreground">No meals logged</p>
         ) : (
-          <div className="divide-hairline -my-0.5 divide-y">
+          <div className="flex flex-col gap-2.5">
             {meals.map((meal) => (
               <MealEntryRow
                 key={meal.id}
                 meal={meal}
-                onPress={() => onSelectMeal(meal)}
+                onEdit={() => onSelectMeal(meal)}
+                onShowDetail={() => onShowDetail(meal)}
               />
             ))}
           </div>
