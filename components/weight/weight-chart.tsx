@@ -1,8 +1,9 @@
 "use client";
 
 import {
-  Area,
-  AreaChart,
+  CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -18,10 +19,7 @@ interface WeightChartProps {
 export function WeightChart({ data }: WeightChartProps) {
   if (data.length === 0) {
     return (
-      <p
-        className="text-muted-foreground py-14 text-center text-sm italic"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
+      <p className="py-14 text-center text-sm text-muted-foreground">
         Log a weight to see your trend
       </p>
     );
@@ -30,79 +28,57 @@ export function WeightChart({ data }: WeightChartProps) {
   const chartData = data.map((e) => ({
     date: e.date,
     label: formatMonthDay(e.date),
-    weightKg: e.weightKg,
+    weight: Math.round(e.weightKg * 10) / 10,
   }));
 
-  const min = Math.min(...chartData.map((d) => d.weightKg));
-  const max = Math.max(...chartData.map((d) => d.weightKg));
-  const firstLabel = chartData[0]?.label ?? "";
-  const lastLabel = chartData[chartData.length - 1]?.label ?? "";
+  const min = Math.min(...chartData.map((d) => d.weight));
+  const max = Math.max(...chartData.map((d) => d.weight));
 
   return (
-    <div className="relative h-60 w-full">
+    <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={chartData}
-          margin={{ top: 14, right: 4, left: 4, bottom: 24 }}
-        >
-          <defs>
-            <linearGradient id="weight-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
-            </linearGradient>
-          </defs>
+        <LineChart data={chartData} margin={{ top: 16, right: 12, left: 0, bottom: 8 }}>
+          <CartesianGrid stroke="var(--hairline)" strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="label"
-            tick={false}
-            axisLine={false}
             tickLine={false}
-            height={0}
+            axisLine={false}
+            tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+            interval="preserveStartEnd"
+            minTickGap={32}
           />
           <YAxis
-            domain={[min - 0.6, max + 0.6]}
-            hide
+            domain={[Math.floor((min - 0.5) * 10) / 10, Math.ceil((max + 0.5) * 10) / 10]}
+            tickLine={false}
+            axisLine={false}
+            tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+            width={42}
           />
           <Tooltip
-            cursor={{ stroke: "var(--accent)", strokeWidth: 1, strokeDasharray: "3 3" }}
+            cursor={{ stroke: "var(--hairline)", strokeWidth: 1 }}
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
-              const p = payload[0].payload as { label: string; weightKg: number };
+              const p = payload[0].payload as { label: string; weight: number };
               return (
-                <div className="bg-elevated border-hairline rounded-lg border px-3 py-2 shadow-lg shadow-black/40">
-                  <p className="text-muted-foreground text-[10px] tracking-[0.16em] uppercase">
-                    {p.label}
-                  </p>
-                  <p
-                    className="text-foreground mt-0.5 tabular-nums text-sm"
-                    style={{ fontFamily: "var(--font-mono)" }}
-                  >
-                    {p.weightKg.toFixed(1)} kg
+                <div className="rounded-xl border border-hairline bg-surface px-3 py-2 shadow-md">
+                  <p className="text-[13px] font-bold text-foreground">{p.label}</p>
+                  <p className="text-xs text-accent">
+                    weight : <span className="tabular-nums">{p.weight.toFixed(1)}</span>
                   </p>
                 </div>
               );
             }}
           />
-          <Area
+          <Line
             type="monotone"
-            dataKey="weightKg"
+            dataKey="weight"
             stroke="var(--accent)"
-            strokeWidth={1.5}
-            fill="url(#weight-fill)"
-            dot={false}
-            activeDot={{
-              r: 4,
-              fill: "var(--accent)",
-              stroke: "var(--background)",
-              strokeWidth: 2,
-            }}
+            strokeWidth={2.5}
+            dot={{ r: 4, fill: "var(--accent)", stroke: "var(--accent)" }}
+            activeDot={{ r: 5, fill: "var(--accent)", stroke: "var(--background)", strokeWidth: 2 }}
           />
-        </AreaChart>
+        </LineChart>
       </ResponsiveContainer>
-      {/* X axis: just first/last label below the chart */}
-      <div className="text-muted-foreground absolute inset-x-0 bottom-0 flex justify-between px-2 text-[10px] tracking-[0.16em] uppercase">
-        <span>{firstLabel}</span>
-        <span>{lastLabel}</span>
-      </div>
     </div>
   );
 }
