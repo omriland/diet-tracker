@@ -5,18 +5,18 @@ import { ExternalLink, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { BreakdownEditSheet } from "./breakdown-edit-sheet";
 import type { BreakdownItem, Meal } from "@/types/meal";
+import {
+  scaleBreakdownItemGrams,
+  updateBreakdownItemCalories,
+} from "@/lib/meals/breakdown";
+import { cn } from "@/lib/utils";
 
 interface MealDetailSheetProps {
   open: boolean;
   meal: Meal | null;
   onOpenChange: (open: boolean) => void;
   onDelete: () => Promise<void>;
-  onEditText: (text: string) => Promise<void>;
-  onManualCalories: (calories: number) => Promise<void>;
   onUpdateBreakdown: (breakdown: BreakdownItem[]) => Promise<void>;
   onRetryEstimate: () => Promise<void>;
 }
@@ -30,218 +30,147 @@ function MealDetailContent({
   meal,
   onClose,
   onDelete,
-  onEditText,
-  onManualCalories,
   onUpdateBreakdown,
   onRetryEstimate,
 }: Omit<MealDetailSheetProps, "open" | "onOpenChange"> & {
   meal: Meal;
   onClose: () => void;
 }) {
-  const [editingText, setEditingText] = useState(false);
-  const [text, setText] = useState(meal.text);
-  const [manualCal, setManualCal] = useState("");
-  const [showManualInput, setShowManualInput] = useState(false);
-  const [editItem, setEditItem] = useState<BreakdownItem | null>(null);
-  const [editItemOpen, setEditItemOpen] = useState(false);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const isPending = meal.pending || meal.calories === null;
   const suspicious = isSuspicious(meal.calories);
-
-  async function handleDeleteItem() {
-    if (!editItem) return;
-    const next = meal.breakdown.filter(
-      (b) => b.itemEn !== editItem.itemEn || b.itemHe !== editItem.itemHe
-    );
-    if (next.length === 0) {
-      toast.error("Cannot remove the only component");
-      return;
-    }
-    await onUpdateBreakdown(next);
-    setEditItemOpen(false);
-    setEditItem(null);
-  }
-
   const annotations: string[] = [];
   if (meal.searched) annotations.push("web");
   if (meal.confidence === "low") annotations.push("low confidence");
   if (suspicious && !isPending) annotations.push("verify");
 
+  function keyFor(item: BreakdownItem) {
+    return `${item.itemEn}__${item.itemHe}`;
+  }
+
   return (
-    <div className="flex max-h-[78dvh] flex-col gap-5 overflow-y-auto pt-2 pb-1">
-      {/* Hero: meal text in Hebrew + total */}
-      <div className="flex flex-col gap-3">
+    <div className="flex max-h-[78dvh] flex-col gap-5 overflow-y-auto pb-2">
+      <header className="border-b border-hairline pb-3 pr-10">
         <p
           dir="auto"
           lang="he"
-          className="text-[22px] leading-snug"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="truncate text-[18px] font-bold text-foreground"
         >
           {meal.text}
         </p>
-        <div className="flex items-baseline justify-between">
-          <span
-            className="text-4xl leading-none tabular-nums"
-            style={{ fontFamily: "var(--font-mono)" }}
-          >
-            {isPending ? (
-              <span className="pulse-dot text-muted-foreground">·</span>
-            ) : (
-              meal.calories
-            )}
-          </span>
-          <span className="text-muted-foreground text-xs">kcal</span>
-        </div>
-        {annotations.length > 0 && (
-          <p className="text-muted-foreground text-[10px] tracking-[0.18em] uppercase">
-            {annotations.map((a, i) => (
-              <span key={a}>
-                {i > 0 && " · "}
-                {a}
-              </span>
-            ))}
-          </p>
-        )}
-      </div>
+      </header>
 
-      {/* Pending: manual entry + retry */}
-      {isPending && (
-        <div className="border-hairline space-y-3 rounded-xl border p-4">
-          <p className="text-muted-foreground text-[11px] tracking-[0.18em] uppercase">
-            Estimating…
-          </p>
-          <div className="flex gap-2">
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="enter calories manually"
-              value={manualCal}
-              onChange={(e) => setManualCal(e.target.value)}
-            />
-            <Button
-              variant="accent"
-              onClick={async () => {
-                const c = parseInt(manualCal, 10);
-                if (Number.isNaN(c) || c <= 0) return;
-                await onManualCalories(c);
-              }}
-            >
-              Save
-            </Button>
-          </div>
-          <Button variant="outline" className="w-full" onClick={onRetryEstimate}>
-            Retry estimate
-          </Button>
-        </div>
+      <section className="flex items-baseline justify-between">
+        <span className="text-[36px] font-bold leading-none tabular-nums text-foreground">
+          {isPending ? <span className="pulse-dot text-muted-foreground">·</span> : meal.calories}
+        </span>
+        <span className="text-sm text-muted-foreground">kcal</span>
+      </section>
+
+      {annotations.length > 0 && (
+        <p className="text-xs text-muted-foreground">{annotations.join(" · ")}</p>
       )}
 
-      {/* Low confidence callout */}
       {meal.confidence === "low" && meal.needsClarificationHe && (
-        <div className="border-warning/30 bg-warning/5 rounded-xl border p-3">
-          <p
-            dir="auto"
-            lang="he"
-            className="text-warning text-end text-sm"
-          >
+        <div className="rounded-xl border border-warning/40 bg-warning/5 p-3">
+          <p dir="auto" lang="he" className="text-end text-sm text-warning">
             {meal.needsClarificationHe}
           </p>
         </div>
       )}
 
-      {/* Breakdown */}
       {meal.breakdown.length > 0 && (
-        <section>
-          <h3 className="text-muted-foreground mb-2 text-[11px] tracking-[0.18em] uppercase">
-            Breakdown
-          </h3>
-          <ul className="divide-hairline divide-y">
+        <section className="border-t border-hairline pt-4">
+          <h3 className="mb-2 text-[15px] font-bold text-foreground">Breakdown</h3>
+          <ul className="flex flex-col">
             {meal.breakdown.map((item) => (
-              <li key={`${item.itemEn}-${item.itemHe}`}>
-                <button
-                  type="button"
-                  className="hover:bg-subtle/40 -mx-2 flex w-full items-center justify-between rounded-md px-2 py-2.5 text-start transition-colors"
-                  onClick={() => {
-                    setEditItem(item);
-                    setEditItemOpen(true);
-                  }}
-                >
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span
-                      dir="auto"
-                      lang="he"
-                      className="text-[15px] leading-snug"
-                    >
-                      {item.itemHe}
-                    </span>
-                    {item.portionGrams != null && (
-                      <span
-                        className="text-muted-foreground text-xs tabular-nums"
-                        style={{ fontFamily: "var(--font-mono)" }}
-                      >
-                        {item.portionGrams} g
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className="shrink-0 text-sm tabular-nums"
-                    style={{ fontFamily: "var(--font-mono)" }}
+              <li key={keyFor(item)} className="border-b border-hairline last:border-b-0">
+                {editingKey === keyFor(item) ? (
+                  <BreakdownEditor
+                    item={item}
+                    onCancel={() => setEditingKey(null)}
+                    onSave={async (updated) => {
+                      const next = meal.breakdown.map((b) =>
+                        b.itemEn === item.itemEn && b.itemHe === item.itemHe ? updated : b
+                      );
+                      await onUpdateBreakdown(next);
+                      setEditingKey(null);
+                    }}
+                    onRemove={async () => {
+                      const next = meal.breakdown.filter(
+                        (b) => b.itemEn !== item.itemEn || b.itemHe !== item.itemHe
+                      );
+                      if (next.length === 0) {
+                        toast.error("Cannot remove the only component");
+                        return;
+                      }
+                      await onUpdateBreakdown(next);
+                      setEditingKey(null);
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setEditingKey(keyFor(item))}
+                    className="flex w-full items-center justify-between gap-3 py-3 text-start"
                   >
-                    {item.calories}
-                  </span>
-                </button>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span dir="auto" lang="he" className="text-[15px] text-foreground">
+                        {item.itemHe}
+                      </span>
+                      {item.portionGrams != null && (
+                        <span className="text-xs tabular-nums text-muted-foreground">
+                          {item.portionGrams} g
+                        </span>
+                      )}
+                    </span>
+                    <span className="shrink-0 text-[15px] font-bold tabular-nums text-foreground">
+                      {item.calories}
+                    </span>
+                  </button>
+                )}
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      {/* Reasoning */}
-      {meal.reasoningHe && (
-        <section>
-          <h3 className="text-muted-foreground mb-1.5 text-[11px] tracking-[0.18em] uppercase">
-            Reasoning
-          </h3>
-          <p
-            dir="auto"
-            lang="he"
-            className="text-foreground/85 text-end text-[14px] leading-relaxed"
-          >
-            {meal.reasoningHe}
-          </p>
-        </section>
+      {(meal.reasoningHe || meal.assumptionsHe.length > 0) && (
+        <details className="group border-t border-hairline pt-4">
+          <summary className="cursor-pointer text-[13px] font-medium text-accent">
+            <span className="group-open:hidden">Show reasoning</span>
+            <span className="hidden group-open:inline">Hide reasoning</span>
+          </summary>
+          <div className="mt-3 flex flex-col gap-3">
+            {meal.reasoningHe && (
+              <p dir="auto" lang="he" className="text-end text-sm text-foreground/85">
+                {meal.reasoningHe}
+              </p>
+            )}
+            {meal.assumptionsHe.length > 0 && (
+              <ul className="flex flex-col gap-1" dir="auto" lang="he">
+                {meal.assumptionsHe.map((a) => (
+                  <li key={a} className="text-end text-sm text-foreground/70">· {a}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </details>
       )}
 
-      {/* Assumptions */}
-      {meal.assumptionsHe.length > 0 && (
-        <section>
-          <h3 className="text-muted-foreground mb-1.5 text-[11px] tracking-[0.18em] uppercase">
-            Assumptions
-          </h3>
-          <ul className="space-y-1" dir="auto" lang="he">
-            {meal.assumptionsHe.map((a) => (
-              <li key={a} className="text-foreground/80 text-end text-sm">
-                · {a}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Sources */}
       {meal.searched && meal.sources.length > 0 && (
-        <section>
-          <h3 className="text-muted-foreground mb-1.5 text-[11px] tracking-[0.18em] uppercase">
-            Sources
-          </h3>
-          <ul className="space-y-1">
+        <section className="border-t border-hairline pt-4">
+          <h3 className="mb-2 text-[13px] font-medium text-muted-foreground">Sources</h3>
+          <ul className="flex flex-col gap-1">
             {meal.sources.map((url) => (
               <li key={url}>
                 <a
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent inline-flex items-center gap-1 text-xs underline-offset-2 hover:underline"
+                  className="inline-flex items-center gap-1 text-xs text-accent underline-offset-2 hover:underline"
                 >
                   <ExternalLink className="h-3 w-3" strokeWidth={1.5} />
                   {url.replace(/^https?:\/\//, "").slice(0, 48)}
@@ -252,115 +181,36 @@ function MealDetailContent({
         </section>
       )}
 
-      {/* Actions */}
-      <div className="border-hairline mt-2 flex flex-col gap-2 border-t pt-4">
-        {!editingText ? (
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              setText(meal.text);
-              setEditingText(true);
-            }}
-          >
-            Edit text & re-estimate
+      <div className="flex flex-col gap-2 border-t border-hairline pt-4">
+        {isPending && (
+          <Button variant="outline" size="lg" className="w-full" onClick={onRetryEstimate}>
+            Re-estimate
           </Button>
-        ) : (
-          <div className="space-y-2">
-            <Label>Edit text</Label>
-            <Input
-              dir="auto"
-              lang="he"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setEditingText(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="accent"
-                className="flex-1"
-                onClick={async () => {
-                  if (!text.trim()) return;
-                  await onEditText(text.trim());
-                  setEditingText(false);
-                  onClose();
-                }}
-              >
-                Re-estimate
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {!isPending && !showManualInput && (
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={() => {
-              setManualCal(meal.calories?.toString() ?? "");
-              setShowManualInput(true);
-            }}
-          >
-            Override calories
-          </Button>
-        )}
-        {!isPending && showManualInput && (
-          <div className="space-y-2">
-            <Label htmlFor="override-cal">Override calories</Label>
-            <div className="flex gap-2">
-              <Input
-                id="override-cal"
-                type="number"
-                inputMode="numeric"
-                value={manualCal}
-                onChange={(e) => setManualCal(e.target.value)}
-              />
-              <Button
-                variant="accent"
-                onClick={async () => {
-                  const c = parseInt(manualCal, 10);
-                  if (Number.isNaN(c) || c <= 0) return;
-                  await onManualCalories(c);
-                  setShowManualInput(false);
-                }}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
         )}
 
         {!confirmingDelete ? (
           <Button
-            variant="ghost"
-            className="text-muted-foreground hover:text-destructive w-full"
+            variant="destructive"
+            size="lg"
+            className="w-full"
             onClick={() => setConfirmingDelete(true)}
           >
-            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
-            Delete
+            <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+            Delete entry
           </Button>
         ) : (
-          <div className="border-destructive/30 bg-destructive/5 flex flex-col gap-2 rounded-xl border p-3">
-            <p className="text-destructive text-sm">Delete this meal?</p>
+          <div className={cn("flex flex-col gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3")}>
+            <p className="text-sm text-destructive">Delete this entry?</p>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setConfirmingDelete(false)}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => setConfirmingDelete(false)}>
                 Keep
               </Button>
               <Button
-                variant="destructive"
-                className="flex-1"
+                variant="default"
+                className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={async () => {
                   await onDelete();
+                  onClose();
                 }}
               >
                 Delete
@@ -369,21 +219,110 @@ function MealDetailContent({
           </div>
         )}
       </div>
+    </div>
+  );
+}
 
-      <BreakdownEditSheet
-        open={editItemOpen}
-        item={editItem}
-        onOpenChange={setEditItemOpen}
-        onSave={async (updated) => {
-          const next = meal.breakdown.map((b) =>
-            b.itemEn === updated.itemEn && b.itemHe === updated.itemHe
-              ? updated
-              : b
-          );
-          await onUpdateBreakdown(next);
-        }}
-        onDelete={handleDeleteItem}
-      />
+function BreakdownEditor({
+  item,
+  onCancel,
+  onSave,
+  onRemove,
+}: {
+  item: BreakdownItem;
+  onCancel: () => void;
+  onSave: (updated: BreakdownItem) => Promise<void>;
+  onRemove: () => Promise<void>;
+}) {
+  const hasGrams = item.originalPortionGrams != null;
+  const [grams, setGrams] = useState(item.portionGrams?.toString() ?? "");
+  const [calories, setCalories] = useState(item.calories.toString());
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+
+  function handleGramsChange(v: string) {
+    setGrams(v);
+    const g = parseFloat(v);
+    if (!Number.isNaN(g) && g > 0 && item.originalPortionGrams) {
+      setCalories(scaleBreakdownItemGrams(item, g).calories.toString());
+    }
+  }
+
+  async function handleSave() {
+    if (hasGrams) {
+      const g = parseFloat(grams);
+      if (Number.isNaN(g) || g <= 0) return;
+      await onSave(scaleBreakdownItemGrams(item, g));
+    } else {
+      const c = parseInt(calories, 10);
+      if (Number.isNaN(c) || c < 0) return;
+      await onSave(updateBreakdownItemCalories(item, c));
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3 py-3">
+      <p dir="auto" lang="he" className="text-end text-[15px] font-bold text-foreground">
+        {item.itemHe}
+      </p>
+      {hasGrams ? (
+        <div className="flex items-center gap-3">
+          <input
+            type="number"
+            inputMode="decimal"
+            value={grams}
+            autoFocus
+            onChange={(e) => handleGramsChange(e.target.value)}
+            className="flex-1 rounded-xl bg-subtle px-3 py-2 text-[15px] tabular-nums text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
+          />
+          <span className="text-xs text-muted-foreground">g</span>
+          <span className="text-[15px] font-bold tabular-nums text-foreground">{calories}</span>
+          <span className="text-xs text-muted-foreground">kcal</span>
+        </div>
+      ) : (
+        <input
+          type="number"
+          inputMode="numeric"
+          value={calories}
+          autoFocus
+          onChange={(e) => setCalories(e.target.value)}
+          className="w-full rounded-xl bg-subtle px-3 py-2 text-[15px] tabular-nums text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
+        />
+      )}
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" className="flex-1" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button variant="accent" size="sm" className="flex-1" onClick={() => void handleSave()}>
+          Save
+        </Button>
+      </div>
+      {!confirmingRemove ? (
+        <button
+          type="button"
+          onClick={() => setConfirmingRemove(true)}
+          className="text-xs text-destructive underline-offset-2 hover:underline"
+        >
+          Remove this component
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-destructive">Remove?</span>
+          <button
+            type="button"
+            onClick={() => setConfirmingRemove(false)}
+            className="text-muted-foreground"
+          >
+            No
+          </button>
+          <button
+            type="button"
+            onClick={() => void onRemove()}
+            className="font-bold text-destructive"
+          >
+            Yes, remove
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -393,22 +332,18 @@ export function MealDetailSheet({
   meal,
   onOpenChange,
   onDelete,
-  onEditText,
-  onManualCalories,
   onUpdateBreakdown,
   onRetryEstimate,
 }: MealDetailSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom">
+      <SheetContent side="bottom" showCloseButton={true}>
         {meal && (
           <MealDetailContent
             key={meal.id}
             meal={meal}
             onClose={() => onOpenChange(false)}
             onDelete={onDelete}
-            onEditText={onEditText}
-            onManualCalories={onManualCalories}
             onUpdateBreakdown={onUpdateBreakdown}
             onRetryEstimate={onRetryEstimate}
           />
