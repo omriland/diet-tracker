@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import { useSwipeable } from "react-swipeable";
 import type { WeightEntry } from "@/types/weight";
-import { formatMonthDay, formatWeekday } from "@/lib/dates/jerusalem";
-import { cn } from "@/lib/utils";
+import { formatMonthDay, formatYear } from "@/lib/dates/jerusalem";
 
 interface WeightEntryListProps {
   entries: WeightEntry[];
@@ -22,78 +19,41 @@ function WeightRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const [revealed, setRevealed] = useState(false);
-  const handlers = useSwipeable({
-    onSwipedLeft: () => setRevealed(true),
-    onSwipedRight: () => setRevealed(false),
-    trackMouse: false,
-    delta: 30,
-  });
-
   return (
-    <div {...handlers} className="border-hairline relative overflow-hidden border-b">
-      <div
-        className={cn(
-          "bg-background flex items-center justify-between py-3 transition-transform duration-200 ease-out",
-          revealed && "-translate-x-24"
-        )}
+    <div className="flex items-center gap-3 rounded-xl bg-subtle px-4 py-3">
+      <span className="flex-1 text-[14px] text-muted-foreground">
+        {formatMonthDay(entry.date)}, {formatYear(entry.date)}
+      </span>
+      <span className="text-[15px] font-bold tabular-nums text-foreground">
+        {entry.weightKg.toFixed(1)} kg
+      </span>
+      <button
+        type="button"
+        onClick={onEdit}
+        aria-label="Edit weight"
+        className="inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
       >
-        <button
-          type="button"
-          className="flex flex-1 items-center justify-between text-start"
-          onClick={onEdit}
-        >
-          <span className="flex flex-col">
-            <span className="text-[15px]">{formatMonthDay(entry.date)}</span>
-            <span className="text-muted-foreground text-xs">
-              {formatWeekday(entry.date)}
-            </span>
-          </span>
-          <span
-            className="text-foreground tabular-nums text-[15px]"
-            style={{ fontFamily: "var(--font-mono)" }}
-          >
-            {entry.weightKg.toFixed(1)} kg
-          </span>
-        </button>
-      </div>
-      {revealed && (
-        <div className="absolute inset-y-0 end-0 flex items-center">
-          <button
-            type="button"
-            onClick={onEdit}
-            aria-label="Edit"
-            className="text-muted-foreground hover:text-foreground inline-flex h-full w-12 items-center justify-center"
-          >
-            <Pencil className="h-4 w-4" strokeWidth={1.5} />
-          </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            aria-label="Delete"
-            className="text-destructive hover:bg-destructive/10 inline-flex h-full w-12 items-center justify-center"
-          >
-            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
-          </button>
-        </div>
-      )}
+        <Pencil className="h-4 w-4" strokeWidth={1.75} />
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        aria-label="Delete weight"
+        className="inline-flex h-7 w-7 items-center justify-center text-destructive transition-opacity hover:opacity-70"
+      >
+        <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+      </button>
     </div>
   );
 }
 
-export function WeightEntryList({
-  entries,
-  onEdit,
-  onDelete,
-}: WeightEntryListProps) {
+export function WeightEntryList({ entries, onEdit, onDelete }: WeightEntryListProps) {
   if (entries.length === 0) return null;
 
   return (
     <section className="mt-6">
-      <h2 className="text-muted-foreground mb-2 text-[11px] tracking-[0.18em] uppercase">
-        Recent
-      </h2>
-      <div>
+      <h2 className="mb-3 text-[15px] font-bold text-foreground">Recent entries</h2>
+      <div className="flex flex-col gap-2">
         {entries.slice(0, 30).map((entry) => (
           <WeightRow
             key={entry.id}
