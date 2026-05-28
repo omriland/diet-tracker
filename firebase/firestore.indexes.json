@@ -7,6 +7,14 @@
         { "fieldPath": "date", "order": "ASCENDING" },
         { "fieldPath": "slot", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "dayMeta",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "doneLogging", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
