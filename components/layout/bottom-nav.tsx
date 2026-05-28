@@ -2,56 +2,53 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Home, Scale, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const links = [
-  {
-    href: "/",
-    label: "Today",
-    match: (p: string) => p === "/" || p.startsWith("/day/"),
-  },
-  {
-    href: "/weight",
-    label: "Weight",
-    match: (p: string) => p === "/weight",
-  },
-  {
-    href: "/settings",
-    label: "Settings",
-    match: (p: string) => p === "/settings",
-  },
-];
+import { getJerusalemDateString } from "@/lib/dates/jerusalem";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const today = getJerusalemDateString();
+
+  const links = [
+    {
+      href: `/day/${today}`,
+      label: "Today",
+      icon: Home,
+      match: (p: string) => p === "/" || p.startsWith("/day/"),
+    },
+    {
+      href: "/weight",
+      label: "Weight",
+      icon: Scale,
+      match: (p: string) => p === "/weight",
+    },
+    {
+      href: "/settings",
+      label: "Settings",
+      icon: SettingsIcon,
+      match: (p: string) => p === "/settings",
+    },
+  ];
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background/85 backdrop-blur-md"
-      style={{
-        paddingBottom: "env(safe-area-inset-bottom)",
-      }}
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex max-w-[480px] items-stretch">
-        {links.map(({ href, label, match }) => {
+        {links.map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                "relative flex flex-1 items-center justify-center py-4 text-[10px] tracking-[0.18em] uppercase transition-colors",
-                active
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                "flex flex-1 flex-col items-center justify-center gap-1 py-3 text-xs transition-colors",
+                active ? "text-accent" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {active && (
-                <span
-                  aria-hidden
-                  className="absolute top-0 h-px w-8 bg-accent"
-                />
-              )}
+              <Icon className="h-5 w-5" strokeWidth={1.75} />
               <span>{label}</span>
             </Link>
           );
