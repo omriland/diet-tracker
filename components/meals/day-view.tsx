@@ -9,7 +9,8 @@ import { CalorieHero } from "./calorie-progress";
 import { MealSlotSection } from "./meal-slot-section";
 import { AddMealSheet } from "./add-meal-sheet";
 import { MealDetailSheet } from "./meal-detail-sheet";
-import { WeightTodayCard } from "@/components/weight/weight-today-card";
+import { QuickEditSheet } from "./quick-edit-sheet";
+import { WeightTodayStrip } from "@/components/weight/weight-today-strip";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMealsForDate, useDayTotals } from "@/hooks/use-meals-for-date";
 import { getTargetForDate, useUserProfile } from "@/hooks/use-user-profile";
@@ -56,21 +57,21 @@ export function DayView({ date }: DayViewProps) {
   const isToday = date === getJerusalemDateString();
 
   const [addSlot, setAddSlot] = useState<MealSlot | null>(null);
-  const [selectedMealId, setSelectedMealId] = useState<string | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
+  const [quickEditMealId, setQuickEditMealId] = useState<string | null>(null);
+  const [detailMealId, setDetailMealId] = useState<string | null>(null);
   const [celebrating, setCelebrating] = useState(false);
 
-  // Live-derive selected meal from snapshot so the sheet stays in sync
-  const selectedMeal = useMemo(
-    () =>
-      selectedMealId ? meals.find((m) => m.id === selectedMealId) ?? null : null,
-    [selectedMealId, meals]
+  const quickEditMeal = useMemo(
+    () => (quickEditMealId ? meals.find((m) => m.id === quickEditMealId) ?? null : null),
+    [quickEditMealId, meals]
+  );
+  const detailMeal = useMemo(
+    () => (detailMealId ? meals.find((m) => m.id === detailMealId) ?? null : null),
+    [detailMealId, meals]
   );
 
   const goToDate = useCallback(
-    (next: string) => {
-      router.push(`/day/${next}`);
-    },
+    (next: string) => router.push(`/day/${next}`),
     [router]
   );
 
@@ -87,11 +88,8 @@ export function DayView({ date }: DayViewProps) {
       const { estimate, source } = await fetchMealEstimate(uid, text);
       await applyEstimateToMeal(uid, mealId, estimate, source);
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Could not estimate calories";
-      toast.error(msg, {
-        description: "Tap the entry to enter calories manually.",
-      });
+      const msg = err instanceof Error ? err.message : "Could not estimate calories";
+      toast.error(msg, { description: "Tap the entry to enter calories manually." });
     }
   }
 
@@ -101,11 +99,7 @@ export function DayView({ date }: DayViewProps) {
     source: "AI" | "AI_CACHED";
   }) {
     if (!uid || !addSlot) return;
-    await createMealFromEstimate(uid, {
-      date,
-      slot: addSlot,
-      ...params,
-    });
+    await createMealFromEstimate(uid, { date, slot: addSlot, ...params });
   }
 
   async function handleManualAdd(params: { text: string; calories: number }) {
@@ -118,12 +112,6 @@ export function DayView({ date }: DayViewProps) {
     });
   }
 
-  async function handleEditText(text: string) {
-    if (!uid || !selectedMealId) return;
-    await updateMealText(uid, selectedMealId, text);
-    void runEstimateAfterEdit(selectedMealId, text);
-  }
-
   return (
     <div {...handlers} className="editorial-in">
       <DayHeader
@@ -134,16 +122,12 @@ export function DayView({ date }: DayViewProps) {
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <span className="pulse-dot text-muted-foreground text-xl">·</span>
+          <span className="pulse-dot text-xl text-muted-foreground">·</span>
         </div>
       ) : (
         <>
-          <CalorieHero
-            consumed={consumed}
-            target={target}
-            remaining={remaining}
-          />
-          {uid && <WeightTodayCard uid={uid} />}
+          <CalorieHero consumed={consumed} target={target} remaining={remaining} />
+          {uid && <WeightTodayStrip uid={uid} />}
           {uid && (
             <SportToggle
               uid={uid}
@@ -152,6 +136,7 @@ export function DayView({ date }: DayViewProps) {
               bonusKcal={meta?.sportBonusKcal ?? SPORT_BONUS_KCAL}
             />
           )}
+
           {MEAL_SLOTS.map(({ slot, label }) => (
             <MealSlotSection
               key={slot}
@@ -159,10 +144,8 @@ export function DayView({ date }: DayViewProps) {
               label={label}
               meals={bySlot[slot]}
               onAdd={(s) => setAddSlot(s)}
-              onSelectMeal={(meal) => {
-                setSelectedMealId(meal.id);
-                setDetailOpen(true);
-              }}
+              onSelectMeal={(meal) => setQuickEditMealId(meal.id)}
+              onShowDetail={(meal) => setDetailMealId(meal.id)}
             />
           ))}
 
@@ -176,10 +159,7 @@ export function DayView({ date }: DayViewProps) {
           )}
 
           {celebrating && (
-            <StreakCelebration
-              streak={streak}
-              onClose={() => setCelebrating(false)}
-            />
+            <StreakCelebration streak={streak} onClose={() => setCelebrating(false)} />
           )}
         </>
       )}
@@ -195,31 +175,41 @@ export function DayView({ date }: DayViewProps) {
         onManualSave={handleManualAdd}
       />
 
-      <MealDetailSheet
-        open={detailOpen}
-        meal={selectedMeal}
+      <QuickEditSheet
+        open={quickEditMealId !== null}
+        meal={quickEditMeal}
         onOpenChange={(open) => {
-          setDetailOpen(open);
-          if (!open) setSelectedMealId(null);
+          if (!open) setQuickEditMealId(null);
+        }}
+        onSaveText={async (text) => {
+          if (!uid || !quickEditMealId) return;
+          await updateMealText(uid, quickEditMealId, text);
+          void runEstimateAfterEdit(quickEditMealId, text);
+        }}
+        onSaveCalories={async (calories) => {
+          if (!uid || !quickEditMealId) return;
+          await updateMealManualCalories(uid, quickEditMealId, calories);
+        }}
+      />
+
+      <MealDetailSheet
+        open={detailMealId !== null}
+        meal={detailMeal}
+        onOpenChange={(open) => {
+          if (!open) setDetailMealId(null);
         }}
         onDelete={async () => {
-          if (!uid || !selectedMealId) return;
-          await deleteMeal(uid, selectedMealId);
-          setDetailOpen(false);
-          setSelectedMealId(null);
-        }}
-        onEditText={handleEditText}
-        onManualCalories={async (calories) => {
-          if (!uid || !selectedMealId) return;
-          await updateMealManualCalories(uid, selectedMealId, calories);
+          if (!uid || !detailMealId) return;
+          await deleteMeal(uid, detailMealId);
+          setDetailMealId(null);
         }}
         onUpdateBreakdown={async (breakdown) => {
-          if (!uid || !selectedMealId) return;
-          await updateMealBreakdown(uid, selectedMealId, breakdown);
+          if (!uid || !detailMealId) return;
+          await updateMealBreakdown(uid, detailMealId, breakdown);
         }}
         onRetryEstimate={async () => {
-          if (!selectedMeal) return;
-          await runEstimateAfterEdit(selectedMeal.id, selectedMeal.text);
+          if (!detailMeal) return;
+          await runEstimateAfterEdit(detailMeal.id, detailMeal.text);
         }}
       />
     </div>
