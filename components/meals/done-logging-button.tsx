@@ -41,10 +41,10 @@ export function DoneLoggingButton({
       onClick={handleClick}
       disabled={pending}
       className={cn(
-        "mt-6 mb-2 w-full rounded-xl py-4 text-sm font-medium tracking-wide transition-all duration-200",
+        "mt-5 mb-2 w-full rounded-2xl py-4 text-[15px] font-semibold transition-colors",
         done
           ? "bg-subtle text-muted-foreground"
-          : "bg-accent text-accent-foreground active:scale-[0.98]"
+          : "bg-accent text-accent-foreground hover:bg-accent/90"
       )}
     >
       {done ? "✓ Logged today · tap to undo" : "Done logging for today"}
