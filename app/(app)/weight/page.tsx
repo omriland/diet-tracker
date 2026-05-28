@@ -19,11 +19,23 @@ import type { WeightEntry } from "@/types/weight";
 import { cn } from "@/lib/utils";
 
 const RANGES = [
-  { label: "30d", days: 30 },
-  { label: "90d", days: 90 },
-  { label: "1y", days: 365 },
-  { label: "All", days: null as number | null },
+  { label: "30D", days: 30 },
+  { label: "90D", days: 90 },
+  { label: "1Y", days: 365 },
+  { label: "ALL", days: null as number | null },
 ] as const;
+
+function deltaClass(value: number | null): string {
+  if (value == null || value === 0) return "text-muted-foreground";
+  return value < 0 ? "text-accent" : "text-destructive";
+}
+
+function deltaText(value: number | null): string {
+  if (value == null) return "—";
+  if (value === 0) return "0 kg";
+  const sign = value < 0 ? "-" : "+";
+  return `${sign}${Math.abs(value).toFixed(1)} kg`;
+}
 
 export default function WeightPage() {
   const { user } = useAuth();
@@ -31,14 +43,11 @@ export default function WeightPage() {
   const { entries, loading } = useWeights(uid);
   const today = getJerusalemDateString();
 
-  const [rangeDays, setRangeDays] = useState<number | null>(90);
+  const [rangeDays, setRangeDays] = useState<number | null>(30);
   const [logOpen, setLogOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<WeightEntry | null>(null);
 
-  const chartData = useMemo(
-    () => filterWeightsByRange(entries, rangeDays),
-    [entries, rangeDays]
-  );
+  const chartData = useMemo(() => filterWeightsByRange(entries, rangeDays), [entries, rangeDays]);
 
   const latest = entries.find((e) => e.date <= today);
   const delta7 = latest ? getWeightDelta(entries, 7, today) : null;
@@ -46,85 +55,70 @@ export default function WeightPage() {
 
   return (
     <div className="editorial-in">
-      <header className="pt-6 pb-2">
-        <p className="text-muted-foreground text-[11px] tracking-[0.22em] uppercase">
-          Weight
-        </p>
+      <header className="border-b border-hairline py-4">
+        <h1 className="text-[22px] font-bold text-foreground">Weight</h1>
       </header>
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <span className="pulse-dot text-muted-foreground text-xl">·</span>
+          <span className="pulse-dot text-2xl text-muted-foreground">·</span>
         </div>
       ) : (
         <>
-          <section className="pb-6">
-            <div className="flex items-baseline gap-3">
-              {latest ? (
-                <>
-                  <span
-                    className="text-5xl leading-none tabular-nums"
-                    style={{ fontFamily: "var(--font-mono)" }}
-                  >
-                    {latest.weightKg.toFixed(1)}
-                  </span>
-                  <span className="text-muted-foreground text-sm">kg</span>
-                </>
-              ) : (
-                <span
-                  className="text-muted-foreground text-4xl italic"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  No weight logged yet
-                </span>
-              )}
+          <section className="border-b border-hairline py-5">
+            <p className="text-sm text-muted-foreground">Current</p>
+            {latest ? (
+              <p className="mt-1 text-[36px] font-bold leading-none tabular-nums text-foreground">
+                {latest.weightKg.toFixed(1)} kg
+              </p>
+            ) : (
+              <p className="mt-1 text-[24px] text-muted-foreground">No weight logged yet</p>
+            )}
+          </section>
+
+          <section className="grid grid-cols-2 gap-4 border-b border-hairline py-4">
+            <div>
+              <p className="text-sm text-muted-foreground">vs. 7 days ago</p>
+              <p className={cn("mt-1 text-[17px] font-bold tabular-nums", deltaClass(delta7))}>
+                {deltaText(delta7)}
+              </p>
             </div>
-            <div className="text-muted-foreground mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs">
-              {delta7 != null && (
-                <DeltaChip value={delta7} label="7 days" />
-              )}
-              {delta30 != null && (
-                <DeltaChip value={delta30} label="30 days" />
-              )}
+            <div>
+              <p className="text-sm text-muted-foreground">vs. 30 days ago</p>
+              <p className={cn("mt-1 text-[17px] font-bold tabular-nums", deltaClass(delta30))}>
+                {deltaText(delta30)}
+              </p>
             </div>
           </section>
 
-          <div className="text-muted-foreground border-hairline flex items-center gap-5 border-y py-3 text-[11px] tracking-[0.18em] uppercase">
-            {RANGES.map(({ label, days }) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => setRangeDays(days)}
-                className={cn(
-                  "relative transition-colors",
-                  rangeDays === days
-                    ? "text-foreground"
-                    : "hover:text-foreground"
-                )}
-              >
-                {label}
-                {rangeDays === days && (
-                  <span
-                    aria-hidden
-                    className="bg-accent absolute -bottom-3 left-0 right-0 h-px"
-                  />
-                )}
-              </button>
-            ))}
-          </div>
+          <section className="border-b border-hairline py-4">
+            <div className="flex gap-2">
+              {RANGES.map(({ label, days }) => {
+                const active = rangeDays === days;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setRangeDays(days)}
+                    className={cn(
+                      "rounded-pill px-3.5 py-1.5 text-[13px] font-bold tabular-nums transition-colors",
+                      active ? "bg-accent text-accent-foreground" : "bg-subtle text-foreground"
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
 
-          <div className="pt-6">
+          <section className="border-b border-hairline py-4">
             <WeightChart data={chartData} />
-          </div>
+          </section>
 
-          <div className="pt-6">
-            <Button
-              variant="accent"
-              size="lg"
-              className="w-full"
-              onClick={() => setLogOpen(true)}
-            >
-              <Plus className="h-4 w-4" strokeWidth={1.5} />
+          <div className="pt-5">
+            <Button variant="accent" size="lg" className="w-full" onClick={() => setLogOpen(true)}>
+              <Plus className="h-4 w-4" strokeWidth={2} />
               Log weight
             </Button>
           </div>
@@ -157,26 +151,5 @@ export default function WeightPage() {
         }}
       />
     </div>
-  );
-}
-
-function DeltaChip({ value, label }: { value: number; label: string }) {
-  if (value === 0) {
-    return (
-      <span className="text-muted-foreground tabular-nums">
-        ◇ 0.0 · {label}
-      </span>
-    );
-  }
-  const dropping = value < 0;
-  return (
-    <span
-      className={cn(
-        "tabular-nums",
-        dropping ? "text-success" : "text-foreground/80"
-      )}
-    >
-      {dropping ? "▼" : "▲"} {Math.abs(value).toFixed(1)} · {label}
-    </span>
   );
 }
