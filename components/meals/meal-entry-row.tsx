@@ -1,59 +1,49 @@
 "use client";
 
+import { Info } from "lucide-react";
 import type { Meal } from "@/types/meal";
 import { cn } from "@/lib/utils";
 
 interface MealEntryRowProps {
   meal: Meal;
-  onPress: () => void;
+  onEdit: () => void;
+  onShowDetail: () => void;
 }
 
-function isSuspicious(calories: number | null): boolean {
-  if (calories === null) return false;
-  return calories < 10 || calories > 3000;
-}
-
-export function MealEntryRow({ meal, onPress }: MealEntryRowProps) {
+export function MealEntryRow({ meal, onEdit, onShowDetail }: MealEntryRowProps) {
   const pending = meal.pending || meal.calories === null;
-  const suspicious = isSuspicious(meal.calories);
-  const lowConfidence = meal.confidence === "low";
 
   return (
-    <button
-      type="button"
-      onClick={onPress}
-      className="hover:bg-subtle/40 group flex w-full items-start justify-between gap-3 rounded-md px-2 py-2.5 -mx-2 text-start transition-colors"
-    >
-      <span className="min-w-0 flex-1">
+    <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex min-w-0 flex-1 items-center justify-between gap-3 text-start"
+      >
         <span
           dir="auto"
           lang="he"
-          className="block text-[15px] leading-snug"
+          className="min-w-0 flex-1 truncate text-[15px] leading-snug text-foreground"
         >
           {meal.text}
         </span>
-        {(lowConfidence || meal.searched || suspicious) && !pending && (
-          <span className="text-muted-foreground mt-1 flex items-center gap-2 text-[10px] tracking-[0.16em] uppercase">
-            {meal.searched && <span>· web</span>}
-            {lowConfidence && <span className="text-warning">· low conf</span>}
-            {suspicious && <span className="text-warning">· verify</span>}
-          </span>
-        )}
-      </span>
-
-      <span
-        className={cn(
-          "shrink-0 self-start pt-0.5 text-end tabular-nums",
-          pending && "text-muted-foreground"
-        )}
-        style={{ fontFamily: "var(--font-mono)" }}
+        <span
+          className={cn(
+            "shrink-0 text-[17px] font-bold tabular-nums text-foreground",
+            pending && "text-muted-foreground"
+          )}
+        >
+          {pending ? <span className="pulse-dot">·</span> : meal.calories}
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={onShowDetail}
+        aria-label="Meal details"
+        className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-accent transition-opacity hover:opacity-70"
       >
-        {pending ? (
-          <span className="pulse-dot inline-block">·</span>
-        ) : (
-          <span className="text-sm">{meal.calories}</span>
-        )}
-      </span>
-    </button>
+        <Info className="h-4 w-4" strokeWidth={2} />
+      </button>
+    </div>
   );
 }
