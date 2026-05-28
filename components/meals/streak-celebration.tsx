@@ -11,7 +11,6 @@ interface StreakCelebrationProps {
 export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
   const numRef = useRef<HTMLSpanElement>(null);
 
-  // Confetti burst from both bottom corners
   useEffect(() => {
     const fire = (origin: { x: number; y: number }, angle: number) =>
       confetti({
@@ -21,7 +20,7 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
         angle,
         startVelocity: 45,
         gravity: 0.9,
-        colors: ["#5ee7df", "#b490ca", "#f9d423", "#ff6b6b", "#ffffff"],
+        colors: ["#4FB6A5", "#7DD3C0", "#f9d423", "#ff6b6b", "#a78bfa"],
       });
 
     const t = setTimeout(() => {
@@ -32,19 +31,15 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
     return () => clearTimeout(t);
   }, []);
 
-  // Count-up animation 0 → streak over 1.2s with ease-out cubic
   useEffect(() => {
     const el = numRef.current;
     if (!el) return;
-
     if (streak === 0) {
       el.textContent = "0";
       return;
     }
-
     const duration = 1200;
     const start = performance.now();
-
     function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
@@ -53,11 +48,9 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
       if (el) el.textContent = String(current);
       if (progress < 1) requestAnimationFrame(tick);
     }
-
     requestAnimationFrame(tick);
   }, [streak]);
 
-  // Auto-dismiss after 3s
   useEffect(() => {
     const t = setTimeout(onClose, 3000);
     return () => clearTimeout(t);
@@ -65,21 +58,17 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      style={{ background: "oklch(0.165 0.005 270 / 88%)" }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/95"
       onClick={onClose}
     >
-      <div className="flex flex-col items-center gap-3 select-none pointer-events-none">
+      <div className="pointer-events-none flex select-none flex-col items-center gap-3">
         <span
           ref={numRef}
-          className="text-[96px] font-bold leading-none tabular-nums text-foreground"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="text-[96px] font-bold leading-none tabular-nums text-accent"
         >
           0
         </span>
-        <span className="text-2xl tracking-wide text-muted-foreground">
-          🔥 days in a row
-        </span>
+        <span className="text-xl text-foreground">🔥 days in a row</span>
       </div>
     </div>
   );
