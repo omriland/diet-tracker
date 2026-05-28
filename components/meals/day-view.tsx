@@ -15,9 +15,13 @@ import { useMealsForDate, useDayTotals } from "@/hooks/use-meals-for-date";
 import { getTargetForDate, useUserProfile } from "@/hooks/use-user-profile";
 import { useDayMeta } from "@/hooks/use-day-meta";
 import { SportToggle } from "./sport-toggle";
+import { DoneLoggingButton } from "./done-logging-button";
+import { StreakCelebration } from "./streak-celebration";
+import { useStreak } from "@/hooks/use-streak";
 import { SPORT_BONUS_KCAL } from "@/types/day-meta";
 import {
   addDaysToDateString,
+  getJerusalemDateString,
   subtractDaysFromDateString,
 } from "@/lib/dates/jerusalem";
 import {
@@ -48,9 +52,13 @@ export function DayView({ date }: DayViewProps) {
   const target = baseTarget + sportBonus;
   const { consumed, remaining } = useDayTotals(meals, target);
 
+  const { streak, todayDone } = useStreak(uid);
+  const isToday = date === getJerusalemDateString();
+
   const [addSlot, setAddSlot] = useState<MealSlot | null>(null);
   const [selectedMealId, setSelectedMealId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
 
   // Live-derive selected meal from snapshot so the sheet stays in sync
   const selectedMeal = useMemo(
@@ -157,6 +165,22 @@ export function DayView({ date }: DayViewProps) {
               }}
             />
           ))}
+
+          {uid && isToday && (
+            <DoneLoggingButton
+              uid={uid}
+              date={date}
+              done={todayDone}
+              onCelebrate={() => setCelebrating(true)}
+            />
+          )}
+
+          {celebrating && (
+            <StreakCelebration
+              streak={streak}
+              onClose={() => setCelebrating(false)}
+            />
+          )}
         </>
       )}
 
