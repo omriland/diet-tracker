@@ -15,6 +15,8 @@ export interface DayMeta {
    * later won't retroactively rewrite past days.
    */
   sportBonusKcal: number;
+  doneLogging: boolean;
+  doneLoggingAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
