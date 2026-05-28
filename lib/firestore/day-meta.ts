@@ -20,6 +20,8 @@ export function dayMetaFromDoc(date: string, data: DocumentData): DayMeta {
       typeof data.sportBonusKcal === "number"
         ? data.sportBonusKcal
         : SPORT_BONUS_KCAL,
+    doneLogging: Boolean(data.doneLogging),
+    doneLoggingAt: data.doneLoggingAt ? timestampToDate(data.doneLoggingAt) : null,
     createdAt: timestampToDate(data.createdAt),
     updatedAt: timestampToDate(data.updatedAt),
   };
@@ -39,6 +41,36 @@ export function subscribeDayMeta(
     },
     (err) => onError?.(err)
   );
+}
+
+/**
+ * Mark or un-mark the doneLogging flag for a given date.
+ * Creates the doc on first write; updates in place thereafter.
+ */
+export async function setDayMetaDoneLogging(
+  uid: string,
+  date: string,
+  done: boolean
+): Promise<void> {
+  const ref = doc(getClientDb(), dayMetaDoc(uid, date));
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    await updateDoc(ref, {
+      doneLogging: done,
+      doneLoggingAt: done ? serverTimestamp() : null,
+      updatedAt: serverTimestamp(),
+    });
+  } else {
+    await setDoc(ref, {
+      date,
+      sport: false,
+      sportBonusKcal: SPORT_BONUS_KCAL,
+      doneLogging: done,
+      doneLoggingAt: done ? serverTimestamp() : null,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
 }
 
 /**
