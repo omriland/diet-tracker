@@ -4,33 +4,37 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center gap-2 text-sm font-semibold whitespace-nowrap transition-all outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          "bg-foreground text-background hover:bg-foreground/90",
+          "rounded-2xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent-soft disabled:text-white",
         accent:
-          "bg-accent text-accent-foreground hover:bg-accent/90",
+          "rounded-2xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent-soft disabled:text-white",
         outline:
-          "border border-border bg-transparent hover:bg-subtle/50",
+          "rounded-2xl border border-hairline bg-transparent text-foreground hover:bg-subtle",
         ghost:
-          "hover:bg-subtle/50 hover:text-foreground",
+          "rounded-md text-foreground hover:bg-subtle",
         secondary:
-          "bg-subtle text-foreground hover:bg-subtle/70",
+          "rounded-2xl bg-subtle text-foreground hover:bg-subtle/70",
         link:
           "text-accent underline-offset-4 hover:underline",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20",
+          "rounded-2xl bg-transparent text-destructive hover:bg-destructive/10",
+        pill:
+          "rounded-pill bg-subtle text-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground",
+        "icon-circle":
+          "rounded-full bg-accent text-accent-foreground hover:bg-accent/90",
       },
       size: {
         default: "h-11 px-4",
         sm: "h-9 px-3 text-[13px]",
-        xs: "h-7 px-2.5 text-xs rounded-md",
-        lg: "h-12 px-5 text-[15px]",
+        xs: "h-7 px-2.5 text-xs",
+        lg: "h-14 px-5 text-[15px]",
         icon: "h-9 w-9",
-        "icon-sm": "h-7 w-7 rounded-md",
-        "icon-lg": "h-11 w-11",
+        "icon-sm": "h-7 w-7",
+        "icon-lg": "h-9 w-9",
       },
     },
     defaultVariants: {
