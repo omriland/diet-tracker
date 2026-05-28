@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { getJerusalemDateString } from "@/lib/dates/jerusalem";
 
 interface LogWeightSheetProps {
@@ -49,28 +47,21 @@ function LogWeightForm({
   }
 
   const isEdit = defaultWeight != null;
+  const canSave = !saving && weight.trim().length > 0;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-2 pb-1">
-      <div className="flex items-baseline justify-between">
-        <h2
-          className="font-display text-2xl"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5 pb-2">
+      <header className="flex items-center justify-between border-b border-hairline pb-3 pr-10">
+        <h2 className="text-[18px] font-bold text-foreground">
           {isEdit ? "Edit weight" : "Log weight"}
         </h2>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-muted-foreground hover:text-foreground text-[11px] tracking-[0.18em] uppercase"
-        >
-          Cancel
-        </button>
-      </div>
+      </header>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="weight-kg">Weight (kg)</Label>
-        <div className="border-hairline focus-within:border-accent flex items-baseline gap-3 border-b pb-2 transition-colors">
+        <label htmlFor="weight-kg" className="text-[15px] font-bold text-foreground">
+          Weight (kg)
+        </label>
+        <div className="flex items-center gap-2">
           <input
             id="weight-kg"
             ref={inputRef}
@@ -80,20 +71,22 @@ function LogWeightForm({
             placeholder="78.4"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            className="placeholder:text-muted-foreground/40 flex-1 bg-transparent text-4xl leading-none tabular-nums text-foreground outline-none"
-            style={{ fontFamily: "var(--font-mono)" }}
+            className="flex-1 rounded-xl bg-subtle px-4 py-3 text-[17px] tabular-nums text-foreground outline-none ring-2 ring-accent focus:ring-accent"
           />
-          <span className="text-muted-foreground text-sm">kg</span>
+          <span className="text-sm text-muted-foreground">kg</span>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="weight-date">Date</Label>
-        <Input
+        <label htmlFor="weight-date" className="text-[15px] font-bold text-foreground">
+          Date
+        </label>
+        <input
           id="weight-date"
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          className="w-full rounded-xl bg-subtle px-4 py-3 text-[15px] text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
         />
       </div>
 
@@ -101,7 +94,7 @@ function LogWeightForm({
         type="submit"
         variant="accent"
         size="lg"
-        disabled={saving || !weight}
+        disabled={!canSave}
         className="w-full"
       >
         {saving ? "Saving…" : "Save"}
@@ -117,13 +110,11 @@ export function LogWeightSheet({
   defaultWeight,
   onSave,
 }: LogWeightSheetProps) {
-  const formKey = open
-    ? `${defaultDate ?? "new"}-${defaultWeight ?? "new"}`
-    : "closed";
+  const formKey = open ? `${defaultDate ?? "new"}-${defaultWeight ?? "new"}` : "closed";
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" showCloseButton={false}>
+      <SheetContent side="bottom" showCloseButton={true}>
         {open && (
           <LogWeightForm
             key={formKey}
