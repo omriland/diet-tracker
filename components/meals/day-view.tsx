@@ -54,7 +54,6 @@ export function DayView({ date }: DayViewProps) {
   const { consumed, remaining } = useDayTotals(meals, target);
 
   const { streak, todayDone } = useStreak(uid);
-  const isToday = date === getJerusalemDateString();
 
   const [addSlot, setAddSlot] = useState<MealSlot | null>(null);
   const [quickEditMealId, setQuickEditMealId] = useState<string | null>(null);
@@ -149,11 +148,11 @@ export function DayView({ date }: DayViewProps) {
             />
           ))}
 
-          {uid && isToday && (
+          {uid && (
             <DoneLoggingButton
               uid={uid}
               date={date}
-              done={todayDone}
+              done={meta?.doneLogging ?? false}
               onCelebrate={() => setCelebrating(true)}
             />
           )}

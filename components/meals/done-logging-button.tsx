@@ -47,7 +47,7 @@ export function DoneLoggingButton({
           : "bg-accent text-accent-foreground hover:bg-accent/90"
       )}
     >
-      {done ? "✓ Logged today · tap to undo" : "Done logging for today"}
+      {done ? "✓ Done logging · tap to undo" : "Done logging"}
     </button>
   );
 }
