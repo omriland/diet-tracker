@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { estimateCalories } from "@/lib/anthropic/estimate";
 
+// Web search + model turns legitimately need more than the platform default
+// (10s Hobby / short on some hosts). Cap it explicitly so the function isn't
+// killed mid-estimate before our own timeouts fire.
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 const RequestSchema = z.object({
   text: z.string().min(1).max(2000),
 });
@@ -10,7 +16,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { text } = RequestSchema.parse(body);
-    const estimate = await estimateCalories(text);
+    // Propagate client disconnect (its 55s abort) down to the Anthropic call so
+    // we stop burning tokens/time once the user is no longer waiting.
+    const estimate = await estimateCalories(text, request.signal);
     return NextResponse.json(estimate);
   } catch (error) {
     if (error instanceof z.ZodError) {

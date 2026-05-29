@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { fetchMealEstimate, EstimateCancelledError } from "@/lib/estimation/fetch-estimate";
 import type { MealEstimate } from "@/lib/anthropic/schemas";
 import type { MealSlot } from "@/types/meal";
@@ -80,7 +81,7 @@ function AddMealForm({
 
   async function handleAdd() {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || submitting) return;
     setSubmitting(true);
     abortRef.current?.abort();
     const ctrl = new AbortController();
@@ -106,7 +107,7 @@ function AddMealForm({
     }
   }
 
-  const canAdd = text.trim().length > 0 && !submitting;
+  const hasText = text.trim().length > 0;
 
   return (
     <div className="flex flex-col gap-5 pb-2">
@@ -141,11 +142,22 @@ function AddMealForm({
         type="button"
         variant="accent"
         size="lg"
-        disabled={!canAdd}
+        disabled={!hasText}
+        aria-busy={submitting}
         onClick={() => void handleAdd()}
-        className="w-full"
+        className={cn(
+          "w-full overflow-hidden",
+          submitting && "btn-estimating pointer-events-none"
+        )}
       >
-        {submitting ? "Estimating…" : "Add meal"}
+        {submitting ? (
+          <span className="inline-flex items-center">
+            Estimating
+            <span className="estimating-ellipsis" aria-hidden />
+          </span>
+        ) : (
+          "Add meal"
+        )}
       </Button>
     </div>
   );

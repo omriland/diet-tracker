@@ -1,7 +1,10 @@
 import type { MealEstimate } from "@/lib/anthropic/schemas";
 import { getCachedEstimate, saveCachedEstimate, touchCache } from "./cache";
 
-const ESTIMATE_TIMEOUT_MS = 30_000;
+// Sits just under the route's maxDuration (60s) so the server can finish (or
+// cleanly abort) before the browser gives up. Web-search estimates can take
+// 30s+, so the old 30s cap was firing on legitimately-slow-but-fine requests.
+const ESTIMATE_TIMEOUT_MS = 55_000;
 
 export class EstimateCancelledError extends Error {
   constructor() {

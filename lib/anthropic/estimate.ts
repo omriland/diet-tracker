@@ -6,7 +6,18 @@ import {
 } from "./schemas";
 import { SYSTEM_PROMPT, WEB_SEARCH_ALLOWED_DOMAINS } from "./system-prompt";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// maxRetries:1 keeps the SDK's own exponential-backoff retries (on 429 /
+// overloaded / 5xx) from silently eating our latency budget. We add our own
+// fast no-tools fallback below instead.
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  maxRetries: 1,
+});
+
+// Per-request ceiling so a single hung turn can't run past the route's
+// maxDuration. The caller's AbortSignal (client disconnect) still wins if it
+// fires earlier.
+const REQUEST_TIMEOUT_MS = 40_000;
 
 function extractText(response: Anthropic.Message): string {
   return response.content
@@ -57,29 +68,41 @@ function parseEstimateJson(raw: string): MealEstimate {
   return mapApiEstimateToMeal(validated);
 }
 
-async function callModel(mealText: string): Promise<MealEstimate> {
+async function callModel(
+  mealText: string,
+  signal?: AbortSignal,
+  useTools = true
+): Promise<MealEstimate> {
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: mealText },
   ];
 
-  // web_search_20260209 is server-side but still emits stop_reason:"tool_use"
-  // turns, requiring the client to loop until end_turn.
-  // max_uses:3 means at most ~4 turns total; cap at 6 for safety.
-  for (let turn = 0; turn < 6; turn++) {
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 2048,
-      system: SYSTEM_PROMPT,
-      tools: [
+  // max_uses:2 means at most ~3 turns total; cap at 5 for safety. Web search
+  // is the single biggest latency source, so we keep the cap tight.
+  const tools: Anthropic.Tool[] | undefined = useTools
+    ? [
         {
           type: "web_search_20260209",
           name: "web_search",
-          max_uses: 3,
+          max_uses: 2,
           allowed_domains: WEB_SEARCH_ALLOWED_DOMAINS,
         } as unknown as Anthropic.Tool,
-      ],
-      messages,
-    });
+      ]
+    : undefined;
+
+  // web_search_20260209 is server-side but still emits stop_reason:"tool_use"
+  // turns, requiring the client to loop until end_turn.
+  for (let turn = 0; turn < 5; turn++) {
+    const response = await client.messages.create(
+      {
+        model: "claude-sonnet-4-6",
+        max_tokens: 2048,
+        system: SYSTEM_PROMPT,
+        ...(tools ? { tools } : {}),
+        messages,
+      },
+      { signal, timeout: REQUEST_TIMEOUT_MS }
+    );
 
     const blockTypes = response.content.map((b) => b.type).join(",");
     console.log(`callModel turn=${turn} stop=${response.stop_reason} blocks=[${blockTypes}]`);
@@ -113,13 +136,20 @@ async function callModel(mealText: string): Promise<MealEstimate> {
   throw new Error("web_search loop exceeded max turns");
 }
 
-export async function estimateCalories(mealText: string): Promise<MealEstimate> {
+export async function estimateCalories(
+  mealText: string,
+  signal?: AbortSignal
+): Promise<MealEstimate> {
   try {
-    return await callModel(mealText);
+    return await callModel(mealText, signal);
   } catch (firstError) {
-    console.warn("Estimate parse failed, retrying once", firstError);
+    // Don't re-run the whole web-search loop (that's what doubled the worst
+    // case past the timeout). Most retryable failures are malformed JSON, which
+    // a fast no-tools pass resolves. If the client already disconnected, bail.
+    if (signal?.aborted) throw firstError;
+    console.warn("Estimate parse failed, retrying once (no tools)", firstError);
     try {
-      return await callModel(mealText);
+      return await callModel(mealText, signal, false);
     } catch (secondError) {
       console.error("Estimate failed after retry", secondError);
       throw secondError;
