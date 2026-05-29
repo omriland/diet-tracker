@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Trash2 } from "lucide-react";
+import { ExternalLink, Trash2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -39,12 +39,13 @@ function MealDetailContent({
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
-  const isPending = meal.pending || meal.calories === null;
+  const isPending = meal.pending;
+  const isFailed = !meal.pending && meal.calories === null;
   const suspicious = isSuspicious(meal.calories);
   const annotations: string[] = [];
   if (meal.searched) annotations.push("web");
   if (meal.confidence === "low") annotations.push("low confidence");
-  if (suspicious && !isPending) annotations.push("verify");
+  if (suspicious && !isPending && !isFailed) annotations.push("verify");
 
   function keyFor(item: BreakdownItem) {
     return `${item.itemEn}__${item.itemHe}`;
@@ -63,8 +64,14 @@ function MealDetailContent({
       </header>
 
       <section className="flex items-baseline justify-between">
-        <span className="text-[36px] font-bold leading-none tabular-nums text-foreground">
-          {isPending ? <span className="pulse-dot text-muted-foreground">·</span> : meal.calories}
+        <span className="flex items-center text-[36px] font-bold leading-none tabular-nums text-foreground min-h-[36px]">
+          {isPending ? (
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          ) : isFailed ? (
+            <AlertCircle className="h-8 w-8 text-destructive" />
+          ) : (
+            meal.calories
+          )}
         </span>
         <span className="text-sm text-muted-foreground">kcal</span>
       </section>
@@ -182,7 +189,7 @@ function MealDetailContent({
       )}
 
       <div className="flex flex-col gap-2 border-t border-hairline pt-4">
-        {isPending && (
+        {isFailed && (
           <Button variant="outline" size="lg" className="w-full" onClick={onRetryEstimate}>
             Re-estimate
           </Button>

@@ -27,12 +27,12 @@ import {
 } from "@/lib/dates/jerusalem";
 import {
   applyEstimateToMeal,
-  createMealFromEstimate,
-  createMealManual,
+  createMealPending,
   deleteMeal,
   updateMealBreakdown,
   updateMealManualCalories,
   updateMealText,
+  updateMealFailedEstimate,
 } from "@/lib/firestore/meals";
 import { fetchMealEstimate } from "@/lib/estimation/fetch-estimate";
 import { MEAL_SLOTS, type MealSlot } from "@/types/meal";
@@ -87,28 +87,16 @@ export function DayView({ date }: DayViewProps) {
       const { estimate, source } = await fetchMealEstimate(uid, text);
       await applyEstimateToMeal(uid, mealId, estimate, source);
     } catch (err) {
+      await updateMealFailedEstimate(uid, mealId);
       const msg = err instanceof Error ? err.message : "Could not estimate calories";
       toast.error(msg, { description: "Tap the entry to enter calories manually." });
     }
   }
 
-  async function handleConfirmAdd(params: {
-    text: string;
-    estimate: Awaited<ReturnType<typeof fetchMealEstimate>>["estimate"];
-    source: "AI" | "AI_CACHED";
-  }) {
+  async function handleConfirmAdd(text: string) {
     if (!uid || !addSlot) return;
-    await createMealFromEstimate(uid, { date, slot: addSlot, ...params });
-  }
-
-  async function handleManualAdd(params: { text: string; calories: number }) {
-    if (!uid || !addSlot) return;
-    await createMealManual(uid, {
-      date,
-      slot: addSlot,
-      text: params.text,
-      calories: params.calories,
-    });
+    const mealId = await createMealPending(uid, { date, slot: addSlot, text });
+    void runEstimateAfterEdit(mealId, text);
   }
 
   return (
@@ -171,7 +159,6 @@ export function DayView({ date }: DayViewProps) {
           if (!open) setAddSlot(null);
         }}
         onConfirm={handleConfirmAdd}
-        onManualSave={handleManualAdd}
       />
 
       <QuickEditSheet

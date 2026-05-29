@@ -5,24 +5,15 @@ import { toast } from "sonner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { fetchMealEstimate, EstimateCancelledError } from "@/lib/estimation/fetch-estimate";
-import type { MealEstimate } from "@/lib/anthropic/schemas";
 import type { MealSlot } from "@/types/meal";
 import { MEAL_SLOTS } from "@/types/meal";
-
-type EstimateSource = "AI" | "AI_CACHED";
 
 interface AddMealSheetProps {
   open: boolean;
   slot: MealSlot | null;
   uid: string | undefined;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (params: {
-    text: string;
-    estimate: MealEstimate;
-    source: EstimateSource;
-  }) => Promise<void>;
-  onManualSave: (params: { text: string; calories: number }) => Promise<void>;
+  onConfirm: (text: string) => Promise<void>;
 }
 
 export function AddMealSheet({
@@ -31,7 +22,6 @@ export function AddMealSheet({
   uid,
   onOpenChange,
   onConfirm,
-  onManualSave,
 }: AddMealSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -42,7 +32,6 @@ export function AddMealSheet({
             slot={slot}
             uid={uid}
             onConfirm={onConfirm}
-            onManualSave={onManualSave}
             onClose={() => onOpenChange(false)}
           />
         )}
@@ -55,53 +44,33 @@ function AddMealForm({
   slot,
   uid,
   onConfirm,
-  onManualSave,
   onClose,
 }: {
   slot: MealSlot;
   uid: string;
   onConfirm: AddMealSheetProps["onConfirm"];
-  onManualSave: AddMealSheetProps["onManualSave"];
   onClose: () => void;
 }) {
   const slotMeta = MEAL_SLOTS.find((s) => s.slot === slot);
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const t = window.setTimeout(() => inputRef.current?.focus(), 200);
     return () => window.clearTimeout(t);
   }, []);
 
-  useEffect(() => {
-    return () => abortRef.current?.abort();
-  }, []);
-
   async function handleAdd() {
     const trimmed = text.trim();
     if (!trimmed || submitting) return;
     setSubmitting(true);
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
     try {
-      const { estimate, source } = await fetchMealEstimate(uid, trimmed, ctrl.signal);
-      if (ctrl.signal.aborted) return;
-      await onConfirm({ text: trimmed, estimate, source });
+      await onConfirm(trimmed);
       onClose();
     } catch (err) {
-      if (err instanceof EstimateCancelledError) return;
-      try {
-        await onManualSave({ text: trimmed, calories: 0 });
-        const message = err instanceof Error ? err.message : "Estimate failed";
-        toast.error(message, { description: "Open the entry to set calories manually." });
-        onClose();
-      } finally {
-        setSubmitting(false);
-      }
-      return;
+      const message = err instanceof Error ? err.message : "Failed to add meal";
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -142,22 +111,12 @@ function AddMealForm({
         type="button"
         variant="accent"
         size="lg"
-        disabled={!hasText}
+        disabled={!hasText || submitting}
         aria-busy={submitting}
         onClick={() => void handleAdd()}
-        className={cn(
-          "w-full overflow-hidden",
-          submitting && "btn-estimating pointer-events-none"
-        )}
+        className="w-full overflow-hidden"
       >
-        {submitting ? (
-          <span className="inline-flex items-center">
-            Estimating
-            <span className="estimating-ellipsis" aria-hidden />
-          </span>
-        ) : (
-          "Add meal"
-        )}
+        Add meal
       </Button>
     </div>
   );

@@ -154,6 +154,16 @@ export async function applyEstimateToMeal(
   });
 }
 
+export async function updateMealFailedEstimate(
+  uid: string,
+  mealId: string
+): Promise<void> {
+  await updateDoc(doc(getClientDb(), mealsCol(uid), mealId), {
+    pending: false,
+    updatedAt: serverTimestamp(),
+  });
+}
+
 export async function updateMealManualCalories(
   uid: string,
   mealId: string,
