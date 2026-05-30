@@ -4,7 +4,16 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useSwipeable } from "react-swipeable";
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 import { DayHeader } from "@/components/layout/day-header";
+import { AddMealFab } from "@/components/layout/add-meal-fab";
 import { CalorieHero } from "./calorie-progress";
 import { MealSlotSection } from "./meal-slot-section";
 import { AddMealSheet } from "./add-meal-sheet";
@@ -33,6 +42,7 @@ import {
   updateMealManualCalories,
   updateMealText,
   updateMealFailedEstimate,
+  updateMealSlot,
 } from "@/lib/firestore/meals";
 import { fetchMealEstimate } from "@/lib/estimation/fetch-estimate";
 import { MEAL_SLOTS, type MealSlot } from "@/types/meal";
@@ -55,7 +65,7 @@ export function DayView({ date }: DayViewProps) {
 
   const { streak, todayDone } = useStreak(uid);
 
-  const [addSlot, setAddSlot] = useState<MealSlot | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
   const [quickEditMealId, setQuickEditMealId] = useState<string | null>(null);
   const [detailMealId, setDetailMealId] = useState<string | null>(null);
   const [celebrating, setCelebrating] = useState(false);
@@ -81,6 +91,26 @@ export function DayView({ date }: DayViewProps) {
     delta: 40,
   });
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } })
+  );
+
+  async function handleDragEnd(e: DragEndEvent) {
+    const mealId = String(e.active.id);
+    const overSlot = e.over?.id as MealSlot | undefined;
+    if (!uid || !overSlot) return;
+    const meal = meals.find((m) => m.id === mealId);
+    if (!meal || meal.slot === overSlot) return;
+    const label = MEAL_SLOTS.find((s) => s.slot === overSlot)?.label ?? overSlot;
+    try {
+      await updateMealSlot(uid, mealId, overSlot);
+      toast.success(`Moved to ${label}`);
+    } catch {
+      toast.error("Could not move meal");
+    }
+  }
+
   async function runEstimateAfterEdit(mealId: string, text: string) {
     if (!uid) return;
     try {
@@ -93,9 +123,9 @@ export function DayView({ date }: DayViewProps) {
     }
   }
 
-  async function handleConfirmAdd(text: string) {
-    if (!uid || !addSlot) return;
-    const mealId = await createMealPending(uid, { date, slot: addSlot, text });
+  async function handleConfirmAdd(text: string, slot: MealSlot) {
+    if (!uid) return;
+    const mealId = await createMealPending(uid, { date, slot, text });
     void runEstimateAfterEdit(mealId, text);
   }
 
@@ -130,17 +160,18 @@ export function DayView({ date }: DayViewProps) {
           />
           {uid && <WeightTodayStrip uid={uid} />}
 
-          {MEAL_SLOTS.map(({ slot, label }) => (
-            <MealSlotSection
-              key={slot}
-              slot={slot}
-              label={label}
-              meals={bySlot[slot]}
-              onAdd={(s) => setAddSlot(s)}
-              onSelectMeal={(meal) => setQuickEditMealId(meal.id)}
-              onShowDetail={(meal) => setDetailMealId(meal.id)}
-            />
-          ))}
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            {MEAL_SLOTS.map(({ slot, label }) => (
+              <MealSlotSection
+                key={slot}
+                slot={slot}
+                label={label}
+                meals={bySlot[slot]}
+                onSelectMeal={(meal) => setQuickEditMealId(meal.id)}
+                onShowDetail={(meal) => setDetailMealId(meal.id)}
+              />
+            ))}
+          </DndContext>
 
           {uid && (
             <DoneLoggingButton
@@ -154,16 +185,16 @@ export function DayView({ date }: DayViewProps) {
           {celebrating && (
             <StreakCelebration streak={streak} onClose={() => setCelebrating(false)} />
           )}
+
+          <AddMealFab onClick={() => setAddOpen(true)} />
         </>
       )}
 
       <AddMealSheet
-        open={addSlot !== null}
-        slot={addSlot}
+        open={addOpen}
+        defaultSlot={null}
         uid={uid}
-        onOpenChange={(open) => {
-          if (!open) setAddSlot(null);
-        }}
+        onOpenChange={setAddOpen}
         onConfirm={handleConfirmAdd}
       />
 

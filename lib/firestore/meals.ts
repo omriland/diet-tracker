@@ -177,6 +177,17 @@ export async function updateMealManualCalories(
   });
 }
 
+export async function updateMealSlot(
+  uid: string,
+  mealId: string,
+  slot: MealSlot
+): Promise<void> {
+  await updateDoc(doc(getClientDb(), mealsCol(uid), mealId), {
+    slot,
+    updatedAt: serverTimestamp(),
+  });
+}
+
 export async function updateMealText(
   uid: string,
   mealId: string,
