@@ -34,7 +34,7 @@ function StatCard({
 export function StatsView() {
   const { user } = useAuth();
   const { profile } = useUserProfile(user?.uid);
-  const { stats, loading } = useStats(user?.uid, profile);
+  const { stats, streaks, loading } = useStats(user?.uid, profile);
   const good = stats.pctDaysOnTarget >= 50;
 
   if (loading) {
@@ -66,8 +66,8 @@ export function StatsView() {
       </h2>
 
       <div className="mt-4 flex flex-col gap-3">
-        <StatCard n={`${stats.bestStreak} days`} c="best on-target streak" />
-        <StatCard n={`${stats.currentStreak} days`} c="current streak" />
+        <StatCard n={`${streaks.current} days`} c="current streak" tone="good" />
+        <StatCard n={`${streaks.best} days`} c="best streak" />
         <StatCard n={String(stats.mealsLogged)} c="meals logged" />
         <div className="flex gap-3">
           <div className="flex-1">

@@ -10,6 +10,7 @@ import {
   type DayCalorieEntry,
   type DietStats,
 } from "@/lib/stats/compute";
+import { computeDoneStreaks, type DoneStreaks } from "@/lib/stats/streaks";
 import { getTargetForDate } from "@/hooks/use-user-profile";
 import {
   getJerusalemDateString,
@@ -20,8 +21,11 @@ import type { UserProfile } from "@/types/user";
 
 const WINDOW_DAYS = 90;
 
+const NO_STREAKS: DoneStreaks = { current: 0, best: 0 };
+
 export function useStats(uid: string | undefined, profile: UserProfile | null) {
   const [stats, setStats] = useState<DietStats | null>(null);
+  const [streaks, setStreaks] = useState<DoneStreaks>(NO_STREAKS);
 
   useEffect(() => {
     if (!uid) return;
@@ -39,11 +43,17 @@ export function useStats(uid: string | undefined, profile: UserProfile | null) {
       ]);
 
       const sportByDate = new Map<string, number>();
+      const doneDates: string[] = [];
       metaSnap.forEach((d) => {
-        const data = d.data() as { sport?: boolean; sportBonusKcal?: number };
+        const data = d.data() as {
+          sport?: boolean;
+          sportBonusKcal?: number;
+          doneLogging?: boolean;
+        };
         if (data.sport) {
           sportByDate.set(d.id, data.sportBonusKcal ?? SPORT_BONUS_KCAL);
         }
+        if (data.doneLogging) doneDates.push(d.id);
       });
 
       const byDate = new Map<string, { consumed: number; mealCount: number }>();
@@ -64,10 +74,16 @@ export function useStats(uid: string | undefined, profile: UserProfile | null) {
         })
       );
 
-      if (!cancelled) setStats(computeStats(entries));
+      if (!cancelled) {
+        setStats(computeStats(entries));
+        setStreaks(computeDoneStreaks(doneDates, getJerusalemDateString()));
+      }
     })().catch((err) => {
       console.error("useStats error", err);
-      if (!cancelled) setStats(computeStats([]));
+      if (!cancelled) {
+        setStats(computeStats([]));
+        setStreaks(NO_STREAKS);
+      }
     });
 
     return () => {
@@ -77,7 +93,7 @@ export function useStats(uid: string | undefined, profile: UserProfile | null) {
 
   const loading = uid ? stats === null : false;
   return useMemo(
-    () => ({ stats: stats ?? computeStats([]), loading }),
-    [stats, loading]
+    () => ({ stats: stats ?? computeStats([]), streaks, loading }),
+    [stats, streaks, loading]
   );
 }

@@ -10,8 +10,6 @@ describe("computeStats", () => {
     expect(s.loggedDays).toBe(0);
     expect(s.pctDaysOnTarget).toBe(0);
     expect(s.avgCaloriesPerDay).toBe(0);
-    expect(s.bestStreak).toBe(0);
-    expect(s.currentStreak).toBe(0);
   });
 
   it("ignores days with no meals", () => {
@@ -29,17 +27,6 @@ describe("computeStats", () => {
     expect(s.daysOnTarget).toBe(2); // <= target
     expect(s.daysOverTarget).toBe(1);
     expect(s.pctDaysOnTarget).toBe(67); // round(2/3*100)
-  });
-
-  it("computes best and current on-target streaks over sorted dates", () => {
-    const s = computeStats([
-      day("2026-05-01", 1500, 1800), // on
-      day("2026-05-02", 1500, 1800), // on
-      day("2026-05-03", 2500, 1800), // over -> breaks
-      day("2026-05-04", 1500, 1800), // on (current run = 1)
-    ]);
-    expect(s.bestStreak).toBe(2);
-    expect(s.currentStreak).toBe(1);
   });
 
   it("averages calories over logged days", () => {
