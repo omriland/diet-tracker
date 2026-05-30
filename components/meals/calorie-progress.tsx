@@ -11,38 +11,47 @@ interface CalorieHeroProps {
 }
 
 export function CalorieHero({ consumed, target, remaining, action }: CalorieHeroProps) {
-  const pct = target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
   const over = consumed > target;
+  const pct = target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
 
   return (
-    <section className="border-b border-hairline py-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-baseline gap-2">
-          <span className="text-[36px] font-bold leading-none tabular-nums text-foreground">
-            {consumed.toLocaleString()}
-          </span>
-          <span className="text-[16px] text-muted-foreground">
-            / {target.toLocaleString()} kcal
-          </span>
-        </div>
-        {action}
-      </div>
-
-      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-subtle">
+    <section
+      className={cn(
+        "relative mt-2 rounded-2xl px-5 py-5",
+        over ? "bg-red-light" : "bg-green-light"
+      )}
+    >
+      {action && <div className="absolute right-4 top-4">{action}</div>}
+      <p
+        className={cn(
+          "text-[11px] font-extrabold uppercase tracking-wider",
+          over ? "text-red-dark" : "text-green-dark"
+        )}
+      >
+        Calories today
+      </p>
+      <p className="mt-1 text-[40px] font-extrabold leading-none tabular-nums text-foreground">
+        {consumed.toLocaleString()}
+      </p>
+      <p className="mt-1 text-sm tabular-nums text-subtle-foreground">
+        {over
+          ? `${(consumed - target).toLocaleString()} kcal over · target ${target.toLocaleString()}`
+          : `${remaining.toLocaleString()} kcal remaining · target ${target.toLocaleString()}`}
+      </p>
+      <div
+        className={cn(
+          "mt-4 h-2 w-full overflow-hidden rounded-full",
+          over ? "bg-red-mid/50" : "bg-green-mid/60"
+        )}
+      >
         <div
           className={cn(
-            "h-full rounded-full transition-[width] duration-500 ease-out",
-            over ? "bg-warning" : "bg-accent"
+            "h-full rounded-full transition-[width] duration-500",
+            over ? "bg-red-dark" : "bg-green-dark"
           )}
-          style={{ width: `${Math.min(100, pct)}%` }}
+          style={{ width: `${pct}%` }}
         />
       </div>
-
-      <p className={cn("mt-3 text-sm tabular-nums", over ? "text-warning" : "text-accent")}>
-        {over
-          ? `${(consumed - target).toLocaleString()} kcal over`
-          : `${remaining.toLocaleString()} kcal remaining`}
-      </p>
     </section>
   );
 }
