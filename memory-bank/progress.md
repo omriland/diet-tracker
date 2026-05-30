@@ -43,3 +43,4 @@
 | 2026-05-27 | PRD finalized; memory bank and Cursor rules created |
 | 2026-05-27 | Full v1 app implemented per PRD build plan |
 | 2026-05-27 | Ownership pass: Firestore rules + indexes deployed; lint clean; stale detail, timeout, FR-14, suspicious cal flag, error boundaries all fixed |
+| 2026-05-30 | Daily-Diet visual redesign (Nunito Sans + Rubik, green/red palette, Figma meal rows + hero) on branch `redesign/daily-diet`; added FAB-only add with slot selector, drag-and-drop slot moves (`@dnd-kit`), and a new Statistics screen (`/stats`, `useStats` + `computeStats`). Vitest added for logic helpers. Spec/plan in `docs/superpowers/`. |

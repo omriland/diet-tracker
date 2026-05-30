@@ -9,19 +9,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "rounded-2xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent-soft disabled:text-white",
+          "rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent-soft disabled:text-white",
         accent:
-          "rounded-2xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent-soft disabled:text-white",
+          "rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent-soft disabled:text-white",
         outline:
-          "rounded-2xl border border-hairline bg-transparent text-foreground hover:bg-subtle",
+          "rounded-xl border border-border bg-transparent text-foreground hover:bg-subtle",
         ghost:
-          "rounded-md text-foreground hover:bg-subtle",
+          "rounded-lg text-foreground hover:bg-subtle",
         secondary:
-          "rounded-2xl bg-subtle text-foreground hover:bg-subtle/70",
+          "rounded-xl bg-subtle text-foreground hover:bg-subtle/70",
         link:
           "text-accent underline-offset-4 hover:underline",
         destructive:
-          "rounded-2xl bg-transparent text-destructive hover:bg-destructive/10",
+          "rounded-xl bg-transparent text-destructive hover:bg-destructive/10",
         pill:
           "rounded-pill bg-subtle text-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground",
         "icon-circle":
