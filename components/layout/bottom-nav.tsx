@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Scale, Settings as SettingsIcon } from "lucide-react";
+import { Home, BarChart3, Scale, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getJerusalemDateString } from "@/lib/dates/jerusalem";
 
@@ -16,6 +16,12 @@ export function BottomNav() {
       label: "Today",
       icon: Home,
       match: (p: string) => p === "/" || p.startsWith("/day/"),
+    },
+    {
+      href: "/stats",
+      label: "Stats",
+      icon: BarChart3,
+      match: (p: string) => p === "/stats",
     },
     {
       href: "/weight",
@@ -33,7 +39,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-surface"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex max-w-[480px] items-stretch">
