@@ -4,6 +4,8 @@
 
 ## Current phase
 
+**Daily-Diet redesign** — On branch `redesign/daily-diet`: full visual reskin to the Rocketseat "Daily Diet" system (Nunito Sans + Rubik, green/red calorie semantics, Figma meal rows + hero, Statistics screen, FAB + drag-and-drop slot moves). Needs iPhone Safari gesture testing (DnD long-press vs day swipe) before merge to `main`.
+
 **v1 complete** — App built; ready for Firebase rules deploy and daily use.
 
 ## Immediate next steps

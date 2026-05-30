@@ -31,7 +31,6 @@ import { useStreak } from "@/hooks/use-streak";
 import { SPORT_BONUS_KCAL } from "@/types/day-meta";
 import {
   addDaysToDateString,
-  getJerusalemDateString,
   subtractDaysFromDateString,
 } from "@/lib/dates/jerusalem";
 import {
@@ -63,7 +62,7 @@ export function DayView({ date }: DayViewProps) {
   const target = baseTarget + sportBonus;
   const { consumed, remaining } = useDayTotals(meals, target);
 
-  const { streak, todayDone } = useStreak(uid);
+  const { streak } = useStreak(uid);
 
   const [addOpen, setAddOpen] = useState(false);
   const [quickEditMealId, setQuickEditMealId] = useState<string | null>(null);
