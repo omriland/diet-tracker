@@ -1,26 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Heebo } from "next/font/google";
+import { Nunito_Sans, Rubik } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { AbortErrorSilencer } from "@/components/providers/abort-error-silencer";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const nunito = Nunito_Sans({
+  variable: "--font-nunito",
   subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const heebo = Heebo({
-  variable: "--font-heebo",
+const rubik = Rubik({
+  variable: "--font-rubik",
   subsets: ["hebrew", "latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "700"],
   display: "swap",
 });
 
@@ -44,7 +39,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: "#FAFAFA",
 };
 
 export default function RootLayout({
@@ -55,7 +50,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${heebo.variable} h-full antialiased`}
+      className={`${nunito.variable} ${rubik.variable} h-full antialiased`}
     >
       <head>
         <AbortErrorSilencer />
