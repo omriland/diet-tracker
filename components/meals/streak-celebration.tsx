@@ -21,7 +21,7 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
         angle,
         startVelocity: 45,
         gravity: 0.9,
-        colors: ["#4FB6A5", "#7DD3C0", "#f9d423", "#ff6b6b", "#a78bfa"],
+        colors: ["#639339", "#CBE4B4", "#E5F0DB", "#BF3B44", "#1B1D1E"],
       });
 
     const t = setTimeout(() => {
