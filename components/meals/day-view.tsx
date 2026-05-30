@@ -113,16 +113,22 @@ export function DayView({ date }: DayViewProps) {
         </div>
       ) : (
         <>
-          <CalorieHero consumed={consumed} target={target} remaining={remaining} />
+          <CalorieHero
+            consumed={consumed}
+            target={target}
+            remaining={remaining}
+            action={
+              uid && (
+                <SportToggle
+                  uid={uid}
+                  date={date}
+                  active={Boolean(meta?.sport)}
+                  bonusKcal={meta?.sportBonusKcal ?? SPORT_BONUS_KCAL}
+                />
+              )
+            }
+          />
           {uid && <WeightTodayStrip uid={uid} />}
-          {uid && (
-            <SportToggle
-              uid={uid}
-              date={date}
-              active={Boolean(meta?.sport)}
-              bonusKcal={meta?.sportBonusKcal ?? SPORT_BONUS_KCAL}
-            />
-          )}
 
           {MEAL_SLOTS.map(({ slot, label }) => (
             <MealSlotSection

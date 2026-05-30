@@ -1,26 +1,31 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface CalorieHeroProps {
   consumed: number;
   target: number;
   remaining: number;
+  action?: ReactNode;
 }
 
-export function CalorieHero({ consumed, target, remaining }: CalorieHeroProps) {
+export function CalorieHero({ consumed, target, remaining, action }: CalorieHeroProps) {
   const pct = target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
   const over = consumed > target;
 
   return (
     <section className="border-b border-hairline py-5">
-      <div className="flex items-baseline gap-2">
-        <span className="text-[36px] font-bold leading-none tabular-nums text-foreground">
-          {consumed.toLocaleString()}
-        </span>
-        <span className="text-[16px] text-muted-foreground">
-          / {target.toLocaleString()} kcal
-        </span>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-baseline gap-2">
+          <span className="text-[36px] font-bold leading-none tabular-nums text-foreground">
+            {consumed.toLocaleString()}
+          </span>
+          <span className="text-[16px] text-muted-foreground">
+            / {target.toLocaleString()} kcal
+          </span>
+        </div>
+        {action}
       </div>
 
       <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-subtle">

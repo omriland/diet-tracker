@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Dumbbell } from "lucide-react";
 import { toast } from "sonner";
 import { setDayMetaSport } from "@/lib/firestore/day-meta";
 import { SPORT_BONUS_KCAL } from "@/types/day-meta";
@@ -32,23 +33,21 @@ export function SportToggle({ uid, date, active, bonusKcal }: SportToggleProps) 
   const bonus = bonusKcal || SPORT_BONUS_KCAL;
 
   return (
-    <div className="border-b border-hairline py-3">
-      <button
-        type="button"
-        onClick={handleToggle}
-        aria-pressed={active}
-        disabled={pending}
-        className={cn(
-          "inline-flex items-center gap-2 rounded-pill px-3.5 py-1.5 text-sm font-medium transition-colors",
-          active
-            ? "bg-accent text-accent-foreground"
-            : "bg-subtle text-foreground hover:bg-subtle/70"
-        )}
-      >
-        <span>🏃</span>
-        <span>Sport</span>
-        <span className="tabular-nums opacity-80">+{bonus} kcal</span>
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={handleToggle}
+      aria-pressed={active}
+      disabled={pending}
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1.5 rounded-pill px-3 py-1.5 text-[13px] font-medium transition-colors",
+        active
+          ? "bg-accent text-accent-foreground"
+          : "bg-subtle text-muted-foreground hover:bg-subtle/70"
+      )}
+    >
+      <Dumbbell className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+      <span>Sport</span>
+      {active && <span className="tabular-nums opacity-80">+{bonus}</span>}
+    </button>
   );
 }

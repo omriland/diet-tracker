@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { setDayMetaDoneLogging } from "@/lib/firestore/day-meta";
 import { cn } from "@/lib/utils";
@@ -41,13 +42,14 @@ export function DoneLoggingButton({
       onClick={handleClick}
       disabled={pending}
       className={cn(
-        "mt-5 mb-2 w-full rounded-2xl py-4 text-[15px] font-semibold transition-colors",
+        "mt-5 mb-2 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-[15px] font-semibold transition-colors",
         done
           ? "bg-subtle text-muted-foreground"
           : "bg-accent text-accent-foreground hover:bg-accent/90"
       )}
     >
-      {done ? "✓ Done logging · tap to undo" : "Done logging"}
+      {done && <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden />}
+      {done ? "Done logging · tap to undo" : "Done logging"}
     </button>
   );
 }

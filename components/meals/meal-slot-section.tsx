@@ -1,14 +1,15 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Croissant, Salad, UtensilsCrossed, Cookie } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { MealEntryRow } from "./meal-entry-row";
 import type { Meal, MealSlot } from "@/types/meal";
 
-const SLOT_EMOJI: Record<MealSlot, string> = {
-  BREAKFAST: "🥐",
-  LUNCH: "🥗",
-  DINNER: "🍽️",
-  SNACK: "🍫",
+const SLOT_ICON: Record<MealSlot, LucideIcon> = {
+  BREAKFAST: Croissant,
+  LUNCH: Salad,
+  DINNER: UtensilsCrossed,
+  SNACK: Cookie,
 };
 
 interface MealSlotSectionProps {
@@ -29,12 +30,13 @@ export function MealSlotSection({
   onShowDetail,
 }: MealSlotSectionProps) {
   const isEmpty = meals.length === 0;
+  const Icon = SLOT_ICON[slot];
 
   return (
     <section className="border-b border-hairline py-4">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-[17px] font-bold text-foreground">
-          <span aria-hidden>{SLOT_EMOJI[slot]}</span>
+          <Icon className="h-[18px] w-[18px] text-muted-foreground" strokeWidth={2} aria-hidden />
           {label}
         </h2>
         <button

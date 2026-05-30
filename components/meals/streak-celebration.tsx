@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Flame } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface StreakCelebrationProps {
@@ -68,7 +69,10 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
         >
           0
         </span>
-        <span className="text-xl text-foreground">🔥 days in a row</span>
+        <span className="flex items-center gap-1.5 text-xl text-foreground">
+          <Flame className="h-5 w-5 text-accent" strokeWidth={2} aria-hidden />
+          days in a row
+        </span>
       </div>
     </div>
   );

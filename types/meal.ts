@@ -41,11 +41,11 @@ export interface Meal {
   pending?: boolean;
 }
 
-export const MEAL_SLOTS: { slot: MealSlot; label: string; emoji: string }[] = [
-  { slot: "BREAKFAST", label: "Breakfast", emoji: "🥐" },
-  { slot: "LUNCH", label: "Lunch", emoji: "🥗" },
-  { slot: "DINNER", label: "Dinner", emoji: "🍽" },
-  { slot: "SNACK", label: "Snacks", emoji: "🍫" },
+export const MEAL_SLOTS: { slot: MealSlot; label: string }[] = [
+  { slot: "BREAKFAST", label: "Breakfast" },
+  { slot: "LUNCH", label: "Lunch" },
+  { slot: "DINNER", label: "Dinner" },
+  { slot: "SNACK", label: "Snacks" },
 ];
 
 export const SLOT_ORDER: Record<MealSlot, number> = {
