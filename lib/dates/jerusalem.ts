@@ -47,6 +47,11 @@ export function isWeekend(dateStr: string): boolean {
   return iso === "5" || iso === "6";
 }
 
+/** Time-of-day in Asia/Jerusalem as HH:mm (24h). For displaying meal log time. */
+export function formatMealTime(date: Date): string {
+  return formatInTimeZone(date, JERUSALEM_TZ, "HH:mm");
+}
+
 export function isValidDateString(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const d = parseISO(value);
