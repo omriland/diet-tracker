@@ -26,14 +26,13 @@ const NO_STREAKS: DoneStreaks = { current: 0, best: 0 };
 export function useStats(uid: string | undefined, profile: UserProfile | null) {
   const [stats, setStats] = useState<DietStats | null>(null);
   const [streaks, setStreaks] = useState<DoneStreaks>(NO_STREAKS);
+  const [weekEntries, setWeekEntries] = useState<DayCalorieEntry[] | null>(null);
 
   useEffect(() => {
     if (!uid) return;
     let cancelled = false;
-    const start = subtractDaysFromDateString(
-      getJerusalemDateString(),
-      WINDOW_DAYS - 1
-    );
+    const today = getJerusalemDateString();
+    const start = subtractDaysFromDateString(today, WINDOW_DAYS - 1);
 
     (async () => {
       const db = getClientDb();
@@ -74,15 +73,30 @@ export function useStats(uid: string | undefined, profile: UserProfile | null) {
         })
       );
 
+      const week7Dates = Array.from({ length: 7 }, (_, i) =>
+        subtractDaysFromDateString(today, 6 - i)
+      );
+      const week7Entries: DayCalorieEntry[] = week7Dates.map((date) => {
+        const day = byDate.get(date);
+        return {
+          date,
+          consumed: day?.consumed ?? 0,
+          mealCount: day?.mealCount ?? 0,
+          target: getTargetForDate(profile, date) + (sportByDate.get(date) ?? 0),
+        };
+      });
+
       if (!cancelled) {
         setStats(computeStats(entries));
-        setStreaks(computeDoneStreaks(doneDates, getJerusalemDateString()));
+        setStreaks(computeDoneStreaks(doneDates, today));
+        setWeekEntries(week7Entries);
       }
     })().catch((err) => {
       console.error("useStats error", err);
       if (!cancelled) {
         setStats(computeStats([]));
         setStreaks(NO_STREAKS);
+        setWeekEntries([]);
       }
     });
 
@@ -93,7 +107,7 @@ export function useStats(uid: string | undefined, profile: UserProfile | null) {
 
   const loading = uid ? stats === null : false;
   return useMemo(
-    () => ({ stats: stats ?? computeStats([]), streaks, loading }),
-    [stats, streaks, loading]
+    () => ({ stats: stats ?? computeStats([]), streaks, weekEntries: weekEntries ?? [], loading }),
+    [stats, streaks, weekEntries, loading]
   );
 }
