@@ -74,6 +74,18 @@ export async function setDayMetaDoneLogging(
 }
 
 /**
+ * Update only the sport bonus calories for a day that already has sport active.
+ */
+export async function updateDayMetaSportBonus(
+  uid: string,
+  date: string,
+  bonusKcal: number
+): Promise<void> {
+  const ref = doc(getClientDb(), dayMetaDoc(uid, date));
+  await updateDoc(ref, { sportBonusKcal: bonusKcal, updatedAt: serverTimestamp() });
+}
+
+/**
  * Toggle the `sport` flag for a given date.
  * Creates the doc on first write; updates in place thereafter.
  * Bonus value is captured at toggle time so historical days stay consistent
