@@ -12,16 +12,17 @@ interface SportToggleProps {
   date: string;
   active: boolean;
   bonusKcal: number;
+  defaultBonus: number;
 }
 
-export function SportToggle({ uid, date, active, bonusKcal }: SportToggleProps) {
+export function SportToggle({ uid, date, active, bonusKcal, defaultBonus }: SportToggleProps) {
   const [pending, setPending] = useState(false);
 
   async function handleToggle() {
     if (pending) return;
     setPending(true);
     try {
-      await setDayMetaSport(uid, date, !active);
+      await setDayMetaSport(uid, date, !active, defaultBonus);
     } catch (err) {
       console.error("Failed to toggle sport", err);
       toast.error("Couldn't save sport flag");

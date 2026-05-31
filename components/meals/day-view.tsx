@@ -29,6 +29,7 @@ import { DoneLoggingButton } from "./done-logging-button";
 import { StreakCelebration } from "./streak-celebration";
 import { useStreak } from "@/hooks/use-streak";
 import { SPORT_BONUS_KCAL } from "@/types/day-meta";
+import { DEFAULT_SPORT_BONUS } from "@/types/user";
 import {
   addDaysToDateString,
   subtractDaysFromDateString,
@@ -153,6 +154,7 @@ export function DayView({ date }: DayViewProps) {
                   date={date}
                   active={Boolean(meta?.sport)}
                   bonusKcal={meta?.sportBonusKcal ?? SPORT_BONUS_KCAL}
+                  defaultBonus={profile?.defaultSportBonus ?? DEFAULT_SPORT_BONUS}
                 />
               )
             }
