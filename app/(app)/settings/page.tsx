@@ -11,6 +11,7 @@ import { userDoc } from "@/lib/firestore/paths";
 import {
   DEFAULT_WEEKDAY_TARGET,
   DEFAULT_WEEKEND_TARGET,
+  DEFAULT_SPORT_BONUS,
 } from "@/types/user";
 
 export default function SettingsPage() {
@@ -54,6 +55,22 @@ export default function SettingsPage() {
           </section>
 
           <section className="border-b border-hairline py-5">
+            <p className="text-[15px] font-bold text-foreground">Sport bonus</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Calories added to your daily target when you log a sport day.
+            </p>
+            <div className="mt-5">
+              <TargetField
+                key={`sport-${profile?.defaultSportBonus}`}
+                uid={uid}
+                field="defaultSportBonus"
+                label="Bonus calories"
+                initial={profile?.defaultSportBonus ?? DEFAULT_SPORT_BONUS}
+              />
+            </div>
+          </section>
+
+          <section className="border-b border-hairline py-5">
             <p className="text-[15px] font-bold text-foreground">Account</p>
             <p className="mt-2 text-sm text-foreground/85">{user?.email}</p>
             <Button
@@ -73,7 +90,7 @@ export default function SettingsPage() {
 
 interface TargetFieldProps {
   uid: string | undefined;
-  field: "weekdayCalorieTarget" | "weekendCalorieTarget";
+  field: "weekdayCalorieTarget" | "weekendCalorieTarget" | "defaultSportBonus";
   label: string;
   initial: number;
 }

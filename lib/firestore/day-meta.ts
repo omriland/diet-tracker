@@ -82,7 +82,8 @@ export async function setDayMetaDoneLogging(
 export async function setDayMetaSport(
   uid: string,
   date: string,
-  sport: boolean
+  sport: boolean,
+  bonusKcal: number = SPORT_BONUS_KCAL
 ): Promise<void> {
   const ref = doc(getClientDb(), dayMetaDoc(uid, date));
   const snap = await getDoc(ref);
@@ -91,14 +92,14 @@ export async function setDayMetaSport(
       sport,
       // Refresh the bonus value whenever the user enables sport for the day,
       // but leave it untouched when disabling — preserves history.
-      ...(sport ? { sportBonusKcal: SPORT_BONUS_KCAL } : {}),
+      ...(sport ? { sportBonusKcal: bonusKcal } : {}),
       updatedAt: serverTimestamp(),
     });
   } else {
     await setDoc(ref, {
       date,
       sport,
-      sportBonusKcal: SPORT_BONUS_KCAL,
+      sportBonusKcal: bonusKcal,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });

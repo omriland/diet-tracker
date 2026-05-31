@@ -11,6 +11,7 @@ import {
   DEFAULT_CALORIE_TARGET,
   DEFAULT_WEEKDAY_TARGET,
   DEFAULT_WEEKEND_TARGET,
+  DEFAULT_SPORT_BONUS,
   type UserProfile,
 } from "@/types/user";
 import { isWeekend } from "@/lib/dates/jerusalem";
@@ -28,6 +29,8 @@ function profileFromDoc(data: Record<string, unknown>): UserProfile {
     email: (data.email as string) ?? "",
     weekdayCalorieTarget: weekday,
     weekendCalorieTarget: weekend,
+    defaultSportBonus:
+      (data.defaultSportBonus as number | undefined) ?? DEFAULT_SPORT_BONUS,
     createdAt: timestampToDate(
       data.createdAt as Parameters<typeof timestampToDate>[0]
     ),
@@ -75,6 +78,7 @@ export function useUserProfile(uid: string | undefined) {
         email: "",
         weekdayCalorieTarget: DEFAULT_WEEKDAY_TARGET,
         weekendCalorieTarget: DEFAULT_WEEKEND_TARGET,
+        defaultSportBonus: DEFAULT_SPORT_BONUS,
         createdAt: new Date(),
       };
     }
