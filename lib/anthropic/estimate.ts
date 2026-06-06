@@ -14,10 +14,16 @@ const client = new Anthropic({
   maxRetries: 1,
 });
 
-// Per-request ceiling so a single hung turn can't run past the route's
-// maxDuration. The caller's AbortSignal (client disconnect) still wins if it
-// fires earlier.
-const REQUEST_TIMEOUT_MS = 40_000;
+// Fastest current model (4-5x faster than Sonnet, near-frontier quality).
+// Meal estimation is latency-sensitive — the add-meal flow blocks on it — so we
+// trade a little reasoning headroom for speed. Override via env if needed.
+const MODEL = process.env.ANTHROPIC_ESTIMATE_MODEL || "claude-haiku-4-5";
+
+// Per-turn ceiling so a single hung turn can't run past the route's maxDuration.
+// With at most ~2 turns (initial + one optional search) this keeps the total
+// under the client's 55s / route's 60s budget. The caller's AbortSignal (client
+// disconnect) still wins if it fires earlier.
+const REQUEST_TIMEOUT_MS = 30_000;
 
 function extractText(response: Anthropic.Message): string {
   return response.content
@@ -80,28 +86,30 @@ async function callModel(
     { role: "user", content: mealText },
   ];
 
-  // Web search is unrestricted (whole web) so the model can verify uncertain
-  // brand/restaurant items; the prompt steers it toward authoritative sources.
-  // max_uses caps latency, and we loop turns until end_turn.
+  // Web search is unrestricted (whole web) so the model can verify a genuinely
+  // uncertain brand/restaurant item, but it's the single biggest latency source
+  // and was causing timeouts. Cap at ONE search; the prompt makes it a rare
+  // exception and steers it toward authoritative sources.
   const tools: Anthropic.Tool[] | undefined = useTools
     ? [
         {
           type: "web_search_20260209",
           name: "web_search",
-          max_uses: 3,
+          max_uses: 1,
         } as unknown as Anthropic.Tool,
       ]
     : undefined;
 
   // web_search_20260209 is server-side but still emits stop_reason:"tool_use"
-  // turns, requiring the client to loop until end_turn.
-  for (let turn = 0; turn < 6; turn++) {
+  // turns, requiring the client to loop until end_turn. With max_uses:1 we need
+  // at most ~2 turns; cap at 4 for safety.
+  for (let turn = 0; turn < 4; turn++) {
     const response = await client.messages.create(
       {
-        model: "claude-sonnet-4-6",
+        model: MODEL,
         // Splitting can yield several meals, each with its own breakdown, so we
         // give more headroom than a single-meal response needed.
-        max_tokens: 4096,
+        max_tokens: 3072,
         system: SYSTEM_PROMPT,
         ...(tools ? { tools } : {}),
         messages,
