@@ -24,7 +24,7 @@ export async function fetchMealEstimate(
   uid: string,
   text: string,
   externalSignal?: AbortSignal
-): Promise<{ estimate: MealEstimate; source: "AI" | "AI_CACHED" }> {
+): Promise<{ estimates: MealEstimate[]; source: "AI" | "AI_CACHED" }> {
   if (externalSignal?.aborted) throw new EstimateCancelledError();
 
   // Cache is best-effort. A failed lookup (network blip, transient rules
@@ -33,9 +33,7 @@ export async function fetchMealEstimate(
     const cached = await getCachedEstimate(uid, text);
     if (cached) {
       void touchCache(uid, text);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { hitCount, lastUsedAt, ...estimate } = cached;
-      return { estimate, source: "AI_CACHED" };
+      return { estimates: cached.meals, source: "AI_CACHED" };
     }
   } catch (err) {
     console.warn("Estimate cache lookup failed; falling through to API", err);
@@ -88,7 +86,10 @@ export async function fetchMealEstimate(
     throw new Error(`Estimate failed (${response.status})${detail}`);
   }
 
-  const estimate = (await response.json()) as MealEstimate;
-  void saveCachedEstimate(uid, text, estimate);
-  return { estimate, source: "AI" };
+  const { meals } = (await response.json()) as { meals: MealEstimate[] };
+  if (!meals || meals.length === 0) {
+    throw new Error("Estimate returned no meals");
+  }
+  void saveCachedEstimate(uid, text, meals);
+  return { estimates: meals, source: "AI" };
 }

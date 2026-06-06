@@ -9,7 +9,8 @@ export const BreakdownItemSchema = z.object({
   confidence: z.enum(["low", "medium", "high"]),
 });
 
-export const EstimateSchema = z.object({
+export const MealItemSchema = z.object({
+  text_he: z.string(),
   calories: z.number().int().min(0).max(5000),
   confidence: z.enum(["low", "medium", "high"]),
   searched: z.boolean(),
@@ -21,9 +22,18 @@ export const EstimateSchema = z.object({
   food_category: z.enum(["meal", "snack", "drink", "dessert"]),
 });
 
+// The model now returns a top-level `meals` array so a single input like
+// "טוסט ושוקו" can be split into independent entries. Capped to keep a single
+// turn bounded; most inputs yield 1-3 meals.
+export const EstimateSchema = z.object({
+  meals: z.array(MealItemSchema).min(1).max(12),
+});
+
+export type ApiMealItem = z.infer<typeof MealItemSchema>;
 export type ApiEstimate = z.infer<typeof EstimateSchema>;
 
 export interface MealEstimate {
+  textHe: string;
   calories: number;
   confidence: Confidence;
   searched: boolean;
@@ -35,8 +45,9 @@ export interface MealEstimate {
   foodCategory: FoodCategory;
 }
 
-export function mapApiEstimateToMeal(api: ApiEstimate): MealEstimate {
+export function mapApiMealItem(api: ApiMealItem): MealEstimate {
   return {
+    textHe: api.text_he,
     calories: api.calories,
     confidence: api.confidence,
     searched: api.searched,
@@ -56,4 +67,8 @@ export function mapApiEstimateToMeal(api: ApiEstimate): MealEstimate {
     needsClarificationHe: api.needs_clarification_he,
     foodCategory: api.food_category,
   };
+}
+
+export function mapApiEstimateToMeals(api: ApiEstimate): MealEstimate[] {
+  return api.meals.map(mapApiMealItem);
 }

@@ -11,16 +11,17 @@ This is the **most critical** subsystem. Full spec: `PRD.md` → "Calorie Estima
 ## API (`POST /api/estimate`)
 
 - Model: `claude-sonnet-4-6`
-- Tool: `web_search_20260209`, `max_uses: 3`, `allowed_domains` per PRD
-- **Assistant prefill** `{` to force JSON; reassemble `raw = "{" + modelText`
-- **Zod** validate before return; retry parse **once**; then error → client manual entry
-- Log (don't reject) if `sum(breakdown.calories) !== calories` (±1 kcal)
+- Tool: `web_search_20260209`, `max_uses: 3`, **unrestricted web** (no `allowed_domains`); prompt steers toward authoritative sources (`WEB_SEARCH_PREFERRED_DOMAINS`)
+- **Response shape:** `{ meals: MealEstimate[] }` — the model may split one input (e.g. `טוסט ושוקו`) into multiple independent meals, each with its own `text_he` + breakdown
+- **Zod** validate before return; retry parse **once** (no tools); then error → client manual entry
+- Log (don't reject) per meal if `sum(breakdown.calories) !== calories` (±1 kcal)
 
 ## Cache flow (client or shared lib)
 
 1. Normalize: trim, collapse whitespace, lowercase
-2. `getDoc(estimationCache/{normalized})` — if &lt;30 days → `AI_CACHED`
+2. `getDoc(estimationCache/{normalized})` — if &lt;30 days → `AI_CACHED` (stored as `meals[]`; legacy flat docs wrapped into one meal)
 3. Else call API → write cache → `AI`
+4. Client (`day-view`) applies `estimates[0]` to the pending row; on split, creates extra rows in the same slot via `createMealFromEstimate`
 
 ## Persisted breakdown edits
 

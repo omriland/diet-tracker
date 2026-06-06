@@ -136,9 +136,13 @@ export async function applyEstimateToMeal(
   uid: string,
   mealId: string,
   estimate: MealEstimate,
-  caloriesSource: CaloriesSource
+  caloriesSource: CaloriesSource,
+  // When the AI splits one input into several meals, the kept (first) row is
+  // re-labelled to just its own item via `text`.
+  options?: { text?: string }
 ): Promise<void> {
   await updateDoc(doc(getClientDb(), mealsCol(uid), mealId), {
+    ...(options?.text ? { text: options.text } : {}),
     calories: estimate.calories,
     caloriesSource,
     confidence: estimate.confidence,

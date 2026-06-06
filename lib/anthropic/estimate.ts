@@ -1,10 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import {
   EstimateSchema,
-  mapApiEstimateToMeal,
+  mapApiEstimateToMeals,
   type MealEstimate,
 } from "./schemas";
-import { SYSTEM_PROMPT, WEB_SEARCH_ALLOWED_DOMAINS } from "./system-prompt";
+import { SYSTEM_PROMPT } from "./system-prompt";
 
 // maxRetries:1 keeps the SDK's own exponential-backoff retries (on 429 /
 // overloaded / 5xx) from silently eating our latency budget. We add our own
@@ -51,52 +51,57 @@ function extractJsonObject(raw: string): string {
   return candidate.slice(start, end + 1);
 }
 
-function parseEstimateJson(raw: string): MealEstimate {
+function parseEstimateJson(raw: string): MealEstimate[] {
   const json = extractJsonObject(raw);
   const parsed = JSON.parse(json);
   const validated = EstimateSchema.parse(parsed);
-  const breakdownSum = validated.breakdown.reduce(
-    (sum, item) => sum + item.calories,
-    0
-  );
-  if (Math.abs(breakdownSum - validated.calories) > 1) {
-    console.warn("Calorie mismatch", {
-      total: validated.calories,
-      breakdownSum,
-    });
+  for (const meal of validated.meals) {
+    const breakdownSum = meal.breakdown.reduce(
+      (sum, item) => sum + item.calories,
+      0
+    );
+    if (Math.abs(breakdownSum - meal.calories) > 1) {
+      console.warn("Calorie mismatch", {
+        item: meal.text_he,
+        total: meal.calories,
+        breakdownSum,
+      });
+    }
   }
-  return mapApiEstimateToMeal(validated);
+  return mapApiEstimateToMeals(validated);
 }
 
 async function callModel(
   mealText: string,
   signal?: AbortSignal,
   useTools = true
-): Promise<MealEstimate> {
+): Promise<MealEstimate[]> {
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: mealText },
   ];
 
-  // max_uses:2 means at most ~3 turns total; cap at 5 for safety. Web search
-  // is the single biggest latency source, so we keep the cap tight.
+  // Web search is unrestricted (whole web) so the model can verify uncertain
+  // brand/restaurant items; the prompt steers it toward authoritative sources.
+  // max_uses caps latency, and we loop turns until end_turn.
   const tools: Anthropic.Tool[] | undefined = useTools
     ? [
         {
           type: "web_search_20260209",
           name: "web_search",
-          max_uses: 2,
-          allowed_domains: WEB_SEARCH_ALLOWED_DOMAINS,
+          max_uses: 3,
         } as unknown as Anthropic.Tool,
       ]
     : undefined;
 
   // web_search_20260209 is server-side but still emits stop_reason:"tool_use"
   // turns, requiring the client to loop until end_turn.
-  for (let turn = 0; turn < 5; turn++) {
+  for (let turn = 0; turn < 6; turn++) {
     const response = await client.messages.create(
       {
         model: "claude-sonnet-4-6",
-        max_tokens: 2048,
+        // Splitting can yield several meals, each with its own breakdown, so we
+        // give more headroom than a single-meal response needed.
+        max_tokens: 4096,
         system: SYSTEM_PROMPT,
         ...(tools ? { tools } : {}),
         messages,
@@ -139,7 +144,7 @@ async function callModel(
 export async function estimateCalories(
   mealText: string,
   signal?: AbortSignal
-): Promise<MealEstimate> {
+): Promise<MealEstimate[]> {
   try {
     return await callModel(mealText, signal);
   } catch (firstError) {

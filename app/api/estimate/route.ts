@@ -18,8 +18,8 @@ export async function POST(request: Request) {
     const { text } = RequestSchema.parse(body);
     // Propagate client disconnect (its 55s abort) down to the Anthropic call so
     // we stop burning tokens/time once the user is no longer waiting.
-    const estimate = await estimateCalories(text, request.signal);
-    return NextResponse.json(estimate);
+    const meals = await estimateCalories(text, request.signal);
+    return NextResponse.json({ meals });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });

@@ -35,6 +35,7 @@ import {
 } from "@/lib/dates/jerusalem";
 import {
   applyEstimateToMeal,
+  createMealFromEstimate,
   createMealPending,
   deleteMeal,
   updateMealBreakdown,
@@ -110,11 +111,35 @@ export function DayView({ date }: DayViewProps) {
     }
   }
 
-  async function runEstimateAfterEdit(mealId: string, text: string) {
+  async function runEstimateAfterEdit(
+    mealId: string,
+    text: string,
+    slot: MealSlot
+  ) {
     if (!uid) return;
     try {
-      const { estimate, source } = await fetchMealEstimate(uid, text);
-      await applyEstimateToMeal(uid, mealId, estimate, source);
+      const { estimates, source } = await fetchMealEstimate(uid, text);
+      const [first, ...rest] = estimates;
+      if (rest.length === 0) {
+        // Single item: keep the user's original wording on the existing row.
+        await applyEstimateToMeal(uid, mealId, first, source);
+        return;
+      }
+      // The AI split the input into multiple foods. Re-label the existing row to
+      // the first item and create independent rows for the rest in the same slot.
+      await applyEstimateToMeal(uid, mealId, first, source, { text: first.textHe });
+      await Promise.all(
+        rest.map((estimate) =>
+          createMealFromEstimate(uid, {
+            date,
+            slot,
+            text: estimate.textHe,
+            estimate,
+            source,
+          })
+        )
+      );
+      toast.success(`Split into ${estimates.length} entries`);
     } catch (err) {
       await updateMealFailedEstimate(uid, mealId);
       const msg = err instanceof Error ? err.message : "Could not estimate calories";
@@ -125,7 +150,7 @@ export function DayView({ date }: DayViewProps) {
   async function handleConfirmAdd(text: string, slot: MealSlot) {
     if (!uid) return;
     const mealId = await createMealPending(uid, { date, slot, text });
-    void runEstimateAfterEdit(mealId, text);
+    void runEstimateAfterEdit(mealId, text, slot);
   }
 
   return (
@@ -204,9 +229,9 @@ export function DayView({ date }: DayViewProps) {
           if (!open) setQuickEditMealId(null);
         }}
         onSaveText={async (text) => {
-          if (!uid || !quickEditMealId) return;
+          if (!uid || !quickEditMealId || !quickEditMeal) return;
           await updateMealText(uid, quickEditMealId, text);
-          void runEstimateAfterEdit(quickEditMealId, text);
+          void runEstimateAfterEdit(quickEditMealId, text, quickEditMeal.slot);
         }}
         onSaveCalories={async (calories) => {
           if (!uid || !quickEditMealId) return;
@@ -231,7 +256,7 @@ export function DayView({ date }: DayViewProps) {
         }}
         onRetryEstimate={async () => {
           if (!detailMeal) return;
-          await runEstimateAfterEdit(detailMeal.id, detailMeal.text);
+          await runEstimateAfterEdit(detailMeal.id, detailMeal.text, detailMeal.slot);
         }}
       />
     </div>
