@@ -3,6 +3,8 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { useStats } from "@/hooks/use-stats";
+import { WeeklyCaloriesChart } from "./weekly-calories-chart";
+import { getJerusalemDateString } from "@/lib/dates/jerusalem";
 import { cn } from "@/lib/utils";
 
 function StatCard({
@@ -34,7 +36,8 @@ function StatCard({
 export function StatsView() {
   const { user } = useAuth();
   const { profile } = useUserProfile(user?.uid);
-  const { stats, streaks, loading } = useStats(user?.uid, profile);
+  const { stats, streaks, weekEntries, loading } = useStats(user?.uid, profile);
+  const today = getJerusalemDateString();
   const good = stats.pctDaysOnTarget >= 50;
 
   if (loading) {
@@ -59,6 +62,10 @@ export function StatsView() {
         <div className="mt-1 text-sm text-subtle-foreground">
           of logged days within your calorie target
         </div>
+      </div>
+
+      <div className="mt-6">
+        <WeeklyCaloriesChart entries={weekEntries} today={today} />
       </div>
 
       <h2 className="mt-6 text-center text-[13px] font-extrabold uppercase tracking-wide text-muted-foreground">
