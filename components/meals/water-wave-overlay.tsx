@@ -140,9 +140,12 @@ export function WaterWaveOverlay({
         </div>
       </div>
 
+      {/* Top scrim: a white veil at the very top that merges into transparency so the readout stays legible without a hard panel edge */}
+      <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-white/95 via-white/60 to-transparent" />
+
       {/* Top-of-page goal readout */}
       <div className="water-label-pop absolute left-1/2 top-[max(env(safe-area-inset-top),1.5rem)] -translate-x-1/2 text-center">
-        <p className="text-[40px] font-extrabold leading-none tabular-nums text-sky-600 drop-shadow-[0_1px_8px_rgba(255,255,255,0.6)]">
+        <p className="text-[40px] font-extrabold leading-none tabular-nums text-sky-600 drop-shadow-[0_1px_8px_rgba(255,255,255,0.8)]">
           {formatLiters(currentMl)}
         </p>
         <p className="mt-1.5 text-[13px] font-bold uppercase tracking-[0.12em] text-sky-700/80">
