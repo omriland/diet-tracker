@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Droplet, GlassWater, Minus, Pencil, Plus } from "lucide-react";
+import { Check, Droplet, Minus, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { addWater } from "@/lib/firestore/day-meta";
 import { clampWaterMl, formatLiters } from "@/lib/meals/water";
-import { BOTTLE_ML, CUP_ML } from "@/types/day-meta";
+import { CUP_ML, HALF_LITER_ML, LITER_ML } from "@/types/day-meta";
 import { cn } from "@/lib/utils";
 
 interface WaterStripProps {
@@ -18,6 +18,22 @@ interface Feedback {
   id: number;
   text: string;
   positive: boolean;
+}
+
+interface WaterAmount {
+  ml: number;
+  num: string;
+  unit: string;
+}
+
+const AMOUNTS: WaterAmount[] = [
+  { ml: LITER_ML, num: "1", unit: "L" },
+  { ml: HALF_LITER_ML, num: "½", unit: "L" },
+  { ml: CUP_ML, num: "220", unit: "ml" },
+];
+
+function amountLabel(a: WaterAmount): string {
+  return `${a.num} ${a.unit}`;
 }
 
 export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
@@ -70,7 +86,7 @@ export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2 rounded-xl border-b border-hairline px-2 py-3 transition-colors",
+        "flex items-center justify-between gap-2 rounded-xl border-b border-hairline px-2 py-2.5 transition-colors",
         editing && "border-transparent bg-sky-500/5"
       )}
     >
@@ -112,59 +128,46 @@ export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1.5">
         {editing ? (
           <>
-            <WaterButton
-              variant="remove"
-              label="1 L"
-              icon={<Minus className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />}
-              onClick={() => void change(-BOTTLE_ML, "1 L")}
-              disabled={pending || displayMl <= 0}
-            />
-            <WaterButton
-              variant="remove"
-              label="220 ml"
-              icon={<Minus className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />}
-              onClick={() => void change(-CUP_ML, "220 ml")}
-              disabled={pending || displayMl <= 0}
-            />
-            <button
-              type="button"
+            {AMOUNTS.map((a) => (
+              <AmountButton
+                key={a.ml}
+                amount={a}
+                variant="remove"
+                onClick={() => void change(-a.ml, amountLabel(a))}
+                disabled={pending || displayMl <= 0}
+              />
+            ))}
+            <IconPill
               onClick={() => setEditing(false)}
-              aria-label="Done editing water"
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-sky-500 text-white transition-transform active:scale-95"
+              ariaLabel="Done editing water"
+              className="bg-sky-500 text-white"
             >
               <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden />
-            </button>
+            </IconPill>
           </>
         ) : (
           <>
+            {AMOUNTS.map((a) => (
+              <AmountButton
+                key={a.ml}
+                amount={a}
+                variant="add"
+                onClick={() => void change(a.ml, amountLabel(a))}
+                disabled={pending}
+              />
+            ))}
             {hasWater && (
-              <button
-                type="button"
+              <IconPill
                 onClick={() => setEditing(true)}
-                className="inline-flex shrink-0 items-center gap-1 rounded-pill px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-subtle active:scale-95"
-                aria-label="Edit water amount"
+                ariaLabel="Edit water amount"
+                className="bg-subtle text-muted-foreground hover:bg-subtle/70"
               >
                 <Pencil className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-                <span>Edit</span>
-              </button>
+              </IconPill>
             )}
-            <WaterButton
-              label="Bottle"
-              icon={<Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />}
-              trailing={<Droplet className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />}
-              onClick={() => void change(BOTTLE_ML, "1 L")}
-              disabled={pending}
-            />
-            <WaterButton
-              label="Cup"
-              icon={<Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />}
-              trailing={<GlassWater className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />}
-              onClick={() => void change(CUP_ML, "220 ml")}
-              disabled={pending}
-            />
           </>
         )}
       </div>
@@ -172,39 +175,69 @@ export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
   );
 }
 
-interface WaterButtonProps {
-  label: string;
-  icon: React.ReactNode;
-  trailing?: React.ReactNode;
+interface AmountButtonProps {
+  amount: WaterAmount;
+  variant: "add" | "remove";
   onClick: () => void;
   disabled?: boolean;
-  variant?: "add" | "remove";
 }
 
-function WaterButton({
-  label,
-  icon,
-  trailing,
-  onClick,
-  disabled,
-  variant = "add",
-}: WaterButtonProps) {
+function AmountButton({ amount, variant, onClick, disabled }: AmountButtonProps) {
+  const remove = variant === "remove";
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-label={`${remove ? "Remove" : "Add"} ${amountLabel(amount)}`}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-pill px-3 py-1.5 text-[13px] font-medium transition-all active:scale-95",
-        variant === "remove"
+        "group inline-flex shrink-0 items-center gap-1 rounded-pill py-1.5 pl-2 pr-2.5 transition-all active:scale-95",
+        remove
           ? "bg-destructive/10 text-destructive hover:bg-destructive/15 active:bg-destructive/20"
-          : "bg-subtle text-muted-foreground hover:bg-subtle/70 active:bg-sky-500/15 active:text-sky-600",
+          : "bg-subtle text-foreground hover:bg-subtle/70 active:bg-sky-500/15",
         "disabled:opacity-40 disabled:active:scale-100"
       )}
     >
-      {icon}
-      {trailing}
-      <span>{label}</span>
+      {remove ? (
+        <Minus className="h-3 w-3 opacity-70" strokeWidth={2.5} aria-hidden />
+      ) : (
+        <Plus
+          className="h-3 w-3 opacity-60 transition-colors group-active:text-sky-600"
+          strokeWidth={2.5}
+          aria-hidden
+        />
+      )}
+      <span className="flex items-baseline gap-0.5 leading-none">
+        <span className="text-[13px] font-semibold tabular-nums">
+          {amount.num}
+        </span>
+        <span className="text-[10px] font-medium uppercase tracking-wide opacity-50">
+          {amount.unit}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+interface IconPillProps {
+  onClick: () => void;
+  ariaLabel: string;
+  className?: string;
+  children: React.ReactNode;
+}
+
+function IconPill({ onClick, ariaLabel, className, children }: IconPillProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className={cn(
+        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill transition-all active:scale-95",
+        className
+      )}
+    >
+      {children}
     </button>
   );
 }

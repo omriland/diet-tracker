@@ -27,5 +27,6 @@ export interface DayMeta {
 export const SPORT_BONUS_KCAL = 200;
 
 /** Water quick-add amounts (ml). */
-export const BOTTLE_ML = 1000;
+export const LITER_ML = 1000;
+export const HALF_LITER_ML = 500;
 export const CUP_ML = 220;
