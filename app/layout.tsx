@@ -3,6 +3,7 @@ import { Nunito_Sans, Rubik } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { AbortErrorSilencer } from "@/components/providers/abort-error-silencer";
+import { VersionWatcher } from "@/components/providers/version-watcher";
 import "./globals.css";
 
 const nunito = Nunito_Sans({
@@ -58,6 +59,7 @@ export default function RootLayout({
       <body className="min-h-full bg-background text-foreground">
         <AuthProvider>
           {children}
+          <VersionWatcher />
           <Toaster position="top-center" />
         </AuthProvider>
       </body>
