@@ -1,17 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Droplet, Minus, Pencil, Plus } from "lucide-react";
+import { Check, Droplet, GlassWater, Minus, Pencil, Plus } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { addWater } from "@/lib/firestore/day-meta";
 import { clampWaterMl, formatLiters } from "@/lib/meals/water";
 import { CUP_ML, HALF_LITER_ML, LITER_ML } from "@/types/day-meta";
 import { cn } from "@/lib/utils";
+import { WaterWaveOverlay } from "./water-wave-overlay";
 
 interface WaterStripProps {
   uid: string;
   date: string;
   waterMl: number;
+  targetMl: number;
+}
+
+interface WaveState {
+  id: number;
+  fillPct: number;
+  currentMl: number;
 }
 
 interface Feedback {
@@ -24,24 +33,27 @@ interface WaterAmount {
   ml: number;
   num: string;
   unit: string;
+  /** When set, the button shows this icon instead of the num/unit text. */
+  icon?: LucideIcon;
 }
 
 const AMOUNTS: WaterAmount[] = [
   { ml: LITER_ML, num: "1", unit: "L" },
   { ml: HALF_LITER_ML, num: "½", unit: "L" },
-  { ml: CUP_ML, num: "220", unit: "ml" },
+  { ml: CUP_ML, num: "220", unit: "ml", icon: GlassWater },
 ];
 
 function amountLabel(a: WaterAmount): string {
   return `${a.num} ${a.unit}`;
 }
 
-export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
+export function WaterStrip({ uid, date, waterMl, targetMl }: WaterStripProps) {
   const [editing, setEditing] = useState(false);
   const [pending, setPending] = useState(false);
   // Optimistic total so the number reacts instantly, before the snapshot lands.
   const [displayMl, setDisplayMl] = useState(waterMl);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [wave, setWave] = useState<WaveState | null>(null);
 
   useEffect(() => {
     setDisplayMl(waterMl);
@@ -65,8 +77,21 @@ export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
       text: `${applied > 0 ? "+" : "−"}${label}`,
       positive: applied > 0,
     });
-    if (typeof navigator !== "undefined" && navigator.vibrate) {
-      navigator.vibrate(applied > 0 ? 12 : [8, 30, 8]);
+
+    // Only the additive logs trigger the full-screen rise effect.
+    if (applied > 0) {
+      const crossedGoal =
+        targetMl > 0 && displayMl < targetMl && next >= targetMl;
+      setWave({
+        id: Date.now(),
+        fillPct: targetMl > 0 ? next / targetMl : 0,
+        currentMl: next,
+      });
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(crossedGoal ? [12, 40, 12, 40, 18] : 12);
+      }
+    } else if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([8, 30, 8]);
     }
 
     setPending(true);
@@ -90,19 +115,19 @@ export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
         editing && "border-transparent bg-sky-500/5"
       )}
     >
-      <div className="relative flex items-center gap-2">
+      <div className="relative flex items-center gap-1.5 whitespace-nowrap">
         <Droplet
           className={cn(
-            "h-3.5 w-3.5 transition-colors",
+            "h-4 w-4 shrink-0 transition-colors",
             hasWater ? "text-sky-500" : "text-muted-foreground"
           )}
           strokeWidth={2}
           fill={hasWater ? "currentColor" : "none"}
-          aria-hidden
+          aria-label="Water"
         />
-        <span className="text-sm text-muted-foreground">
-          {editing ? "Remove:" : "Water:"}
-        </span>
+        {editing && (
+          <span className="text-sm text-muted-foreground">Remove:</span>
+        )}
         <span
           key={feedback?.id ?? "static"}
           className={cn(
@@ -113,6 +138,11 @@ export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
         >
           {formatLiters(displayMl)}
         </span>
+        {!editing && targetMl > 0 && (
+          <span className="text-[13px] font-medium tabular-nums text-muted-foreground">
+            / {formatLiters(targetMl)}
+          </span>
+        )}
 
         {feedback && (
           <span
@@ -171,6 +201,16 @@ export function WaterStrip({ uid, date, waterMl }: WaterStripProps) {
           </>
         )}
       </div>
+
+      {wave && (
+        <WaterWaveOverlay
+          key={wave.id}
+          fillPct={wave.fillPct}
+          currentMl={wave.currentMl}
+          targetMl={targetMl}
+          onDone={() => setWave(null)}
+        />
+      )}
     </div>
   );
 }
@@ -207,14 +247,18 @@ function AmountButton({ amount, variant, onClick, disabled }: AmountButtonProps)
           aria-hidden
         />
       )}
-      <span className="flex items-baseline gap-0.5 leading-none">
-        <span className="text-[13px] font-semibold tabular-nums">
-          {amount.num}
+      {amount.icon ? (
+        <amount.icon className="h-4 w-4" strokeWidth={2} aria-hidden />
+      ) : (
+        <span className="flex items-baseline gap-0.5 leading-none">
+          <span className="text-[13px] font-semibold tabular-nums">
+            {amount.num}
+          </span>
+          <span className="text-[10px] font-medium uppercase tracking-wide opacity-50">
+            {amount.unit}
+          </span>
         </span>
-        <span className="text-[10px] font-medium uppercase tracking-wide opacity-50">
-          {amount.unit}
-        </span>
-      </span>
+      )}
     </button>
   );
 }

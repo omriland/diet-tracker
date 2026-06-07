@@ -30,7 +30,7 @@ import { DoneLoggingButton } from "./done-logging-button";
 import { StreakCelebration } from "./streak-celebration";
 import { useStreak } from "@/hooks/use-streak";
 import { SPORT_BONUS_KCAL } from "@/types/day-meta";
-import { DEFAULT_SPORT_BONUS } from "@/types/user";
+import { DEFAULT_SPORT_BONUS, DEFAULT_WATER_TARGET_ML } from "@/types/user";
 import {
   addDaysToDateString,
   subtractDaysFromDateString,
@@ -186,7 +186,14 @@ export function DayView({ date }: DayViewProps) {
             }
           />
           {uid && <WeightTodayStrip uid={uid} />}
-          {uid && <WaterStrip uid={uid} date={date} waterMl={meta?.waterMl ?? 0} />}
+          {uid && (
+            <WaterStrip
+              uid={uid}
+              date={date}
+              waterMl={meta?.waterMl ?? 0}
+              targetMl={profile?.waterTargetMl ?? DEFAULT_WATER_TARGET_ML}
+            />
+          )}
 
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
             {MEAL_SLOTS.map(({ slot, label }) => (

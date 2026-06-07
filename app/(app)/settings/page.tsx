@@ -8,10 +8,12 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { getClientDb } from "@/lib/firebase/client";
 import { userDoc } from "@/lib/firestore/paths";
+import { litersToMl, mlToLitersInput } from "@/lib/meals/water";
 import {
   DEFAULT_WEEKDAY_TARGET,
   DEFAULT_WEEKEND_TARGET,
   DEFAULT_SPORT_BONUS,
+  DEFAULT_WATER_TARGET_ML,
 } from "@/types/user";
 
 export default function SettingsPage() {
@@ -66,6 +68,20 @@ export default function SettingsPage() {
                 field="defaultSportBonus"
                 label="Bonus calories"
                 initial={profile?.defaultSportBonus ?? DEFAULT_SPORT_BONUS}
+              />
+            </div>
+          </section>
+
+          <section className="border-b border-hairline py-5">
+            <p className="text-[15px] font-bold text-foreground">Daily water target</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              How much you aim to drink each day.
+            </p>
+            <div className="mt-5">
+              <WaterTargetField
+                key={`water-${profile?.waterTargetMl}`}
+                uid={uid}
+                initialMl={profile?.waterTargetMl ?? DEFAULT_WATER_TARGET_ML}
               />
             </div>
           </section>
@@ -137,6 +153,65 @@ function TargetField({ uid, field, label, initial }: TargetFieldProps) {
           className="flex-1 rounded-xl bg-subtle px-4 py-3 text-[17px] tabular-nums text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
         />
         <span className="text-sm text-muted-foreground">{saving ? "saving…" : "kcal"}</span>
+      </div>
+    </div>
+  );
+}
+
+interface WaterTargetFieldProps {
+  uid: string | undefined;
+  initialMl: number;
+}
+
+function WaterTargetField({ uid, initialMl }: WaterTargetFieldProps) {
+  const [value, setValue] = useState(mlToLitersInput(initialMl));
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function commit() {
+    if (!uid) return;
+    const ml = litersToMl(value);
+    if (ml === null || ml < 500 || ml > 10000) {
+      toast.error("Water target must be between 0.5 and 10 L");
+      setValue(mlToLitersInput(initialMl));
+      return;
+    }
+    if (ml === initialMl) {
+      setValue(mlToLitersInput(ml));
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateDoc(doc(getClientDb(), userDoc(uid)), { waterTargetMl: ml });
+      setValue(mlToLitersInput(ml));
+      toast.success("Water target updated");
+    } catch {
+      toast.error("Couldn't save water target");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div>
+      <p className="text-sm text-foreground/85">Goal</p>
+      <div className="mt-2 flex items-center gap-2">
+        <input
+          ref={inputRef}
+          type="number"
+          inputMode="decimal"
+          step="0.1"
+          min="0.5"
+          max="10"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={() => void commit()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") inputRef.current?.blur();
+          }}
+          className="flex-1 rounded-xl bg-subtle px-4 py-3 text-[17px] tabular-nums text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
+        />
+        <span className="text-sm text-muted-foreground">{saving ? "saving…" : "L"}</span>
       </div>
     </div>
   );
