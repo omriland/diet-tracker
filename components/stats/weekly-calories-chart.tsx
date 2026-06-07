@@ -41,22 +41,27 @@ export function WeeklyCaloriesChart({
             <div key={entry.date} className="flex flex-1 flex-col items-center">
               <div className="relative w-full flex-1 mb-1.5">
                 {/* Bar background */}
-                <div className="absolute inset-0 rounded-md bg-subtle" />
+                <div
+                  className={cn(
+                    "absolute inset-0 rounded-lg transition-colors",
+                    isToday ? "bg-green-light ring-2 ring-accent/25" : "bg-subtle"
+                  )}
+                />
 
                 {/* Consumed fill */}
                 {hasData && (
                   <div
                     className={cn(
-                      "absolute bottom-0 w-full rounded-md",
-                      over ? "bg-red-500/60" : "bg-green-500/60"
+                      "absolute bottom-0 w-full rounded-lg transition-[height] duration-500",
+                      over ? "bg-red-dark" : "bg-green-dark"
                     )}
-                    style={{ height: `${consumedPct}%` }}
+                    style={{ height: `max(${consumedPct}%, 0.5rem)` }}
                   />
                 )}
 
                 {/* Target line */}
                 <div
-                  className="absolute w-full h-[2px] rounded-full bg-foreground/30"
+                  className="absolute w-full border-t-2 border-dashed border-foreground/35"
                   style={{ bottom: `calc(${targetPct}% - 1px)` }}
                 />
               </div>
@@ -81,7 +86,7 @@ export function WeeklyCaloriesChart({
           <span className="font-bold text-foreground">{daysOver}</span> over prior to today
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-[2px] w-4 rounded-full bg-foreground/30" />
+          <span className="inline-block w-4 border-t-2 border-dashed border-foreground/35" />
           target
         </span>
       </div>
