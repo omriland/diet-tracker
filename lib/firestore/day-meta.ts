@@ -1,6 +1,7 @@
 import {
   doc,
   getDoc,
+  increment,
   onSnapshot,
   serverTimestamp,
   setDoc,
@@ -10,6 +11,7 @@ import {
 import { getClientDb } from "@/lib/firebase/client";
 import { dayMetaDoc } from "@/lib/firestore/paths";
 import { timestampToDate } from "@/lib/firestore/converters";
+import { clampWaterMl } from "@/lib/meals/water";
 import { type DayMeta, SPORT_BONUS_KCAL } from "@/types/day-meta";
 
 export function dayMetaFromDoc(date: string, data: DocumentData): DayMeta {
@@ -22,6 +24,7 @@ export function dayMetaFromDoc(date: string, data: DocumentData): DayMeta {
         : SPORT_BONUS_KCAL,
     doneLogging: Boolean(data.doneLogging),
     doneLoggingAt: data.doneLoggingAt ? timestampToDate(data.doneLoggingAt) : null,
+    waterMl: typeof data.waterMl === "number" ? data.waterMl : 0,
     createdAt: timestampToDate(data.createdAt),
     updatedAt: timestampToDate(data.updatedAt),
   };
@@ -67,6 +70,7 @@ export async function setDayMetaDoneLogging(
       sportBonusKcal: SPORT_BONUS_KCAL,
       doneLogging: done,
       doneLoggingAt: done ? serverTimestamp() : null,
+      waterMl: 0,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
@@ -112,6 +116,51 @@ export async function setDayMetaSport(
       date,
       sport,
       sportBonusKcal: bonusKcal,
+      waterMl: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
+}
+
+/**
+ * Add (or remove, with a negative delta) water for a given date.
+ * Creates the doc on first write; increments in place thereafter.
+ * The running total is clamped so it never drops below 0.
+ *
+ * `currentMl` is the latest known total from the live snapshot and is used to
+ * clamp negative deltas without an extra read.
+ */
+export async function addWater(
+  uid: string,
+  date: string,
+  deltaMl: number,
+  currentMl: number = 0
+): Promise<void> {
+  const ref = doc(getClientDb(), dayMetaDoc(uid, date));
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    const existing =
+      typeof snap.data().waterMl === "number" ? snap.data().waterMl : currentMl;
+    const next = clampWaterMl(existing + deltaMl);
+    // When the delta would push the total negative, set the clamped value
+    // directly; otherwise use atomic increment to avoid lost updates.
+    if (existing + deltaMl < 0) {
+      await updateDoc(ref, { waterMl: next, updatedAt: serverTimestamp() });
+    } else {
+      await updateDoc(ref, {
+        waterMl: increment(deltaMl),
+        updatedAt: serverTimestamp(),
+      });
+    }
+  } else {
+    await setDoc(ref, {
+      date,
+      sport: false,
+      sportBonusKcal: SPORT_BONUS_KCAL,
+      doneLogging: false,
+      doneLoggingAt: null,
+      waterMl: clampWaterMl(deltaMl),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });

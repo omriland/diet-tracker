@@ -17,9 +17,15 @@ export interface DayMeta {
   sportBonusKcal: number;
   doneLogging: boolean;
   doneLoggingAt: Date | null;
+  /** Running total of water drunk that day, in milliliters. */
+  waterMl: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 /** Default bonus for a "sport day". Configurable in settings later if needed. */
 export const SPORT_BONUS_KCAL = 200;
+
+/** Water quick-add amounts (ml). */
+export const BOTTLE_ML = 1000;
+export const CUP_ML = 220;

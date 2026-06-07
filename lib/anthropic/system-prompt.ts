@@ -27,6 +27,13 @@ ESTIMATION PRINCIPLES — BE ACCURATE, DO NOT OVER-ESTIMATE:
    Use median, real-world values — NOT worst-case, "generous", or high-end figures. People usually
    eat moderate portions; when in doubt, lean toward the lower-to-middle of a plausible range rather
    than inflating the number.
+6a. When you have a calorie RANGE for an item (e.g. 200-300 kcal), pick a value slightly BELOW the
+    midpoint — about 40% of the way from the low end to the high end (≈240 in that example), rounded
+    sensibly. This applies to each breakdown item and to the meal total.
+6b. EXCEPTION: when the meal names a specific, recognizable branded/packaged product (e.g. "קליק",
+    "במבה", "קוקה קולה", "מילקי") or a specific chain menu item, use its EXACT known label/menu
+    calories — do NOT apply the range discount in 6a and do NOT round it down. A known product has a
+    definite value, not a range. Use the standard package/serving size unless the user says otherwise.
 7. Never double-count. If a dish's typical calorie figure already includes its oil, sauce, dressing,
    or bread, do NOT add those again as extra lines.
 8. STRONGLY prefer your own knowledge. The user is waiting in real time, so answer directly from

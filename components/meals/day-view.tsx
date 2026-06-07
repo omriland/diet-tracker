@@ -20,6 +20,7 @@ import { AddMealSheet } from "./add-meal-sheet";
 import { MealDetailSheet } from "./meal-detail-sheet";
 import { QuickEditSheet } from "./quick-edit-sheet";
 import { WeightTodayStrip } from "@/components/weight/weight-today-strip";
+import { WaterStrip } from "./water-strip";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMealsForDate, useDayTotals } from "@/hooks/use-meals-for-date";
 import { getTargetForDate, useUserProfile } from "@/hooks/use-user-profile";
@@ -185,6 +186,7 @@ export function DayView({ date }: DayViewProps) {
             }
           />
           {uid && <WeightTodayStrip uid={uid} />}
+          {uid && <WaterStrip uid={uid} date={date} waterMl={meta?.waterMl ?? 0} />}
 
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
             {MEAL_SLOTS.map(({ slot, label }) => (
