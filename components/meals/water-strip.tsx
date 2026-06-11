@@ -111,15 +111,28 @@ export function WaterStrip({ uid, date, waterMl, targetMl }: WaterStripProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2 rounded-xl border-b border-hairline px-2 py-2.5 transition-colors",
-        editing && "border-transparent bg-sky-500/5"
+        "glass relative mt-2 flex items-center justify-between gap-2 overflow-hidden rounded-2xl px-3.5 py-3 transition-colors",
+        editing && "ring-1 ring-water/40"
       )}
     >
+      {/* Fill meter along the bottom edge */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-[3px] bg-white/5"
+      >
+        <div
+          className="h-full rounded-r-full bg-water transition-[width] duration-500 ease-out"
+          style={{
+            width: `${targetMl > 0 ? Math.min(100, (displayMl / targetMl) * 100) : 0}%`,
+          }}
+        />
+      </div>
+
       <div className="relative flex items-center gap-1.5 whitespace-nowrap">
         <Droplet
           className={cn(
             "h-4 w-4 shrink-0 transition-colors",
-            hasWater ? "text-sky-500" : "text-muted-foreground"
+            hasWater ? "text-water" : "text-muted-foreground"
           )}
           strokeWidth={2}
           fill={hasWater ? "currentColor" : "none"}
@@ -132,7 +145,7 @@ export function WaterStrip({ uid, date, waterMl, targetMl }: WaterStripProps) {
           key={feedback?.id ?? "static"}
           className={cn(
             "text-[15px] font-bold tabular-nums",
-            feedback ? "water-bump text-sky-500" : "text-foreground"
+            feedback ? "water-bump text-water" : "text-foreground"
           )}
           aria-live="polite"
         >
@@ -150,7 +163,7 @@ export function WaterStrip({ uid, date, waterMl, targetMl }: WaterStripProps) {
             onAnimationEnd={() => setFeedback(null)}
             className={cn(
               "water-float pointer-events-none absolute -top-3 left-8 text-[13px] font-bold tabular-nums",
-              feedback.positive ? "text-sky-500" : "text-muted-foreground"
+              feedback.positive ? "text-water" : "text-muted-foreground"
             )}
           >
             {feedback.text}
@@ -173,7 +186,7 @@ export function WaterStrip({ uid, date, waterMl, targetMl }: WaterStripProps) {
             <IconPill
               onClick={() => setEditing(false)}
               ariaLabel="Done editing water"
-              className="bg-sky-500 text-white"
+              className="bg-water text-background"
             >
               <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden />
             </IconPill>
@@ -234,7 +247,7 @@ function AmountButton({ amount, variant, onClick, disabled }: AmountButtonProps)
         "group inline-flex shrink-0 items-center gap-1 rounded-pill py-1.5 pl-2 pr-2.5 transition-all active:scale-95",
         remove
           ? "bg-destructive/10 text-destructive hover:bg-destructive/15 active:bg-destructive/20"
-          : "bg-subtle text-foreground hover:bg-subtle/70 active:bg-sky-500/15",
+          : "bg-subtle text-foreground hover:bg-subtle/70 active:bg-water/15",
         "disabled:opacity-40 disabled:active:scale-100"
       )}
     >
@@ -242,7 +255,7 @@ function AmountButton({ amount, variant, onClick, disabled }: AmountButtonProps)
         <Minus className="h-3 w-3 opacity-70" strokeWidth={2.5} aria-hidden />
       ) : (
         <Plus
-          className="h-3 w-3 opacity-60 transition-colors group-active:text-sky-600"
+          className="h-3 w-3 opacity-60 transition-colors group-active:text-water"
           strokeWidth={2.5}
           aria-hidden
         />

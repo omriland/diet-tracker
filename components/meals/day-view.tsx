@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useSwipeable } from "react-swipeable";
@@ -13,7 +13,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { DayHeader } from "@/components/layout/day-header";
-import { AddMealFab } from "@/components/layout/add-meal-fab";
+import { ADD_MEAL_EVENT } from "@/lib/meals/add-meal-signal";
 import { CalorieHero } from "./calorie-progress";
 import { MealSlotSection } from "./meal-slot-section";
 import { AddMealSheet } from "./add-meal-sheet";
@@ -162,12 +162,28 @@ export function DayView({ date }: DayViewProps) {
     setAddOpen(true);
   }
 
+  // The dock's center button: same-page taps arrive as a window event;
+  // cross-page taps land here with a one-shot ?add=1 query param.
+  useEffect(() => {
+    const onAdd = () => openAddSheet(null);
+    window.addEventListener(ADD_MEAL_EVENT, onAdd);
+    let timer: number | undefined;
+    if (new URLSearchParams(window.location.search).get("add") === "1") {
+      window.history.replaceState(null, "", window.location.pathname);
+      // Slight delay lets the page transition settle before the sheet slides up.
+      timer = window.setTimeout(onAdd, 80);
+    }
+    return () => {
+      window.removeEventListener(ADD_MEAL_EVENT, onAdd);
+      window.clearTimeout(timer);
+    };
+  }, []);
+
   return (
     <div {...handlers}>
       <DayHeader
         date={date}
-        onPrev={() => goToDate(subtractDaysFromDateString(date, 1))}
-        onNext={() => goToDate(addDaysToDateString(date, 1))}
+        onSelectDate={goToDate}
         onToday={() => goToDate(getJerusalemDateString())}
       />
 
@@ -235,8 +251,6 @@ export function DayView({ date }: DayViewProps) {
           {celebrating && (
             <StreakCelebration streak={streak} onClose={() => setCelebrating(false)} />
           )}
-
-          <AddMealFab onClick={() => openAddSheet(null)} />
         </>
       )}
 

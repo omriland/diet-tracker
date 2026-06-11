@@ -64,7 +64,7 @@ function MealDetailContent({
       </header>
 
       <section className="flex items-baseline justify-between">
-        <span className="flex items-center text-[36px] font-bold leading-none tabular-nums text-foreground min-h-[36px]">
+        <span className="font-display flex items-center text-[40px] font-bold leading-none tabular-nums text-accent min-h-[40px]">
           {isPending ? (
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           ) : isFailed ? (

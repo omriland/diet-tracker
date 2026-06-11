@@ -67,7 +67,7 @@ export function WaterWaveOverlay({
         className="absolute inset-0"
         style={{
           boxShadow:
-            "inset 0 0 120px 10px rgba(8,47,73,0.16), inset 0 40px 60px -30px rgba(255,255,255,0.45)",
+            "inset 0 0 120px 10px rgba(8,47,73,0.28), inset 0 40px 60px -30px rgba(255,255,255,0.14)",
         }}
       />
 
@@ -145,10 +145,10 @@ export function WaterWaveOverlay({
 
       {/* Top-of-page goal readout */}
       <div className="water-label-pop absolute left-1/2 top-[max(env(safe-area-inset-top),1.5rem)] -translate-x-1/2 text-center">
-        <p className="text-[40px] font-extrabold leading-none tabular-nums text-sky-600 drop-shadow-[0_1px_8px_rgba(255,255,255,0.8)] dark:text-sky-400 dark:drop-shadow-none">
+        <p className="font-display text-[40px] font-bold leading-none tabular-nums text-water">
           {formatLiters(currentMl)}
         </p>
-        <p className="mt-1.5 text-[13px] font-bold uppercase tracking-[0.12em] text-sky-700/80 dark:text-sky-300/80">
+        <p className="mt-1.5 text-[13px] font-bold uppercase tracking-[0.12em] text-water/80">
           {reached ? "Goal reached" : `of ${formatLiters(targetMl)} goal`}
         </p>
       </div>

@@ -42,10 +42,10 @@ export function DoneLoggingButton({
       onClick={handleClick}
       disabled={pending}
       className={cn(
-        "mt-5 mb-2 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[15px] font-semibold transition-colors",
+        "mt-5 mb-2 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-[15px] font-bold transition-all active:scale-[0.99]",
         done
-          ? "bg-subtle text-muted-foreground"
-          : "bg-foreground text-background hover:bg-foreground/90"
+          ? "glass text-muted-foreground"
+          : "glow-accent bg-accent text-accent-foreground hover:brightness-105"
       )}
     >
       {done && <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden />}

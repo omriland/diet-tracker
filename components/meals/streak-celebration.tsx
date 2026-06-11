@@ -21,7 +21,7 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
         angle,
         startVelocity: 45,
         gravity: 0.9,
-        colors: ["#5F8573", "#A6C2B5", "#E0EAE5", "#BF3B44", "#33523F"],
+        colors: ["#CDFB51", "#8FBE2E", "#EFFFC0", "#5BD1F5", "#FFC95C"],
       });
 
     const t = setTimeout(() => {
@@ -59,17 +59,17 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
       onClick={onClose}
     >
       <div className="pointer-events-none flex select-none flex-col items-center gap-3">
         <span
           ref={numRef}
-          className="text-[96px] font-bold leading-none tabular-nums text-accent"
+          className="font-display text-glow text-[120px] font-bold leading-none tabular-nums text-accent"
         >
           0
         </span>
-        <span className="flex items-center gap-1.5 text-xl text-foreground">
+        <span className="flex items-center gap-1.5 text-xl font-semibold text-foreground">
           <Flame className="h-5 w-5 text-accent" strokeWidth={2} aria-hidden />
           days in a row
         </span>

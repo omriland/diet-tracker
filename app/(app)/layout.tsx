@@ -24,7 +24,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col px-5 pb-28 pt-[max(env(safe-area-inset-top),0.5rem)]">
+    <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col px-5 pb-32 pt-[max(env(safe-area-inset-top),0.5rem)]">
+      <div className="ambient-scene" aria-hidden />
       <main className="flex-1">{children}</main>
       <BottomNav />
     </div>

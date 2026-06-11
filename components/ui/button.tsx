@@ -9,15 +9,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent-soft disabled:text-white",
+          "rounded-2xl bg-accent font-bold text-accent-foreground hover:brightness-105 disabled:bg-accent/30 disabled:text-accent-foreground/60 disabled:shadow-none",
         accent:
-          "rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent-soft disabled:text-white",
+          "rounded-2xl bg-accent font-bold text-accent-foreground hover:brightness-105 disabled:bg-accent/30 disabled:text-accent-foreground/60 disabled:shadow-none",
         outline:
-          "rounded-xl border border-border bg-transparent text-foreground hover:bg-subtle",
+          "rounded-2xl border border-white/10 bg-transparent text-foreground hover:bg-subtle",
         ghost:
           "rounded-lg text-foreground hover:bg-subtle",
         secondary:
-          "rounded-xl bg-subtle text-foreground hover:bg-subtle/70",
+          "rounded-2xl bg-subtle text-foreground hover:bg-subtle/70",
         link:
           "text-accent underline-offset-4 hover:underline",
         destructive:

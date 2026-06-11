@@ -24,8 +24,8 @@ export function WeeklyCaloriesChart({
   ).length;
 
   return (
-    <div className="rounded-2xl bg-muted p-4">
-      <p className="text-[13px] font-extrabold uppercase tracking-wide text-muted-foreground">
+    <div className="glass rounded-2xl p-4">
+      <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
         Last 7 days
       </p>
 
@@ -44,7 +44,7 @@ export function WeeklyCaloriesChart({
                 <div
                   className={cn(
                     "absolute inset-0 rounded-lg transition-colors",
-                    isToday ? "bg-green-light ring-2 ring-accent/25" : "bg-subtle"
+                    isToday ? "bg-white/8 ring-1 ring-accent/40" : "bg-white/4"
                   )}
                 />
 
@@ -53,7 +53,9 @@ export function WeeklyCaloriesChart({
                   <div
                     className={cn(
                       "bar-rise absolute bottom-0 w-full rounded-lg transition-[height] duration-500",
-                      over ? "bg-red-dark" : "bg-green-dark"
+                      over
+                        ? "bg-gradient-to-t from-red-mid to-red-dark"
+                        : "bg-gradient-to-t from-green-mid to-green-dark"
                     )}
                     style={
                       {
@@ -66,7 +68,7 @@ export function WeeklyCaloriesChart({
 
                 {/* Target line */}
                 <div
-                  className="absolute w-full border-t-2 border-dashed border-foreground/35"
+                  className="absolute w-full border-t-2 border-dashed border-white/30"
                   style={{ bottom: `calc(${targetPct}% - 1px)` }}
                 />
               </div>
@@ -91,7 +93,7 @@ export function WeeklyCaloriesChart({
           <span className="font-bold text-foreground">{daysOver}</span> over prior to today
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-4 border-t-2 border-dashed border-foreground/35" />
+          <span className="inline-block w-4 border-t-2 border-dashed border-white/30" />
           target
         </span>
       </div>

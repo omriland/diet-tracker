@@ -19,7 +19,7 @@ export function MealEntryRow({ meal, onEdit, onShowDetail }: MealEntryRowProps) 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3.5 shadow-[0_1px_2px_rgba(19,43,33,0.04)] transition-all active:scale-[0.99] active:bg-subtle/40",
+        "glass flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-all active:scale-[0.99]",
         pending && "opacity-70"
       )}
     >
@@ -28,12 +28,14 @@ export function MealEntryRow({ meal, onEdit, onShowDetail }: MealEntryRowProps) 
         onClick={onEdit}
         className="flex min-w-0 flex-1 items-center gap-3 text-start"
       >
-        <span className="shrink-0 text-xs font-bold tabular-nums text-foreground">{time}</span>
-        <span className="h-3.5 w-px shrink-0 bg-border" aria-hidden />
+        <span className="font-display shrink-0 text-xs font-bold tabular-nums text-muted-foreground">
+          {time}
+        </span>
+        <span className="h-4 w-px shrink-0 bg-white/10" aria-hidden />
         <span
           dir="auto"
           lang="he"
-          className="min-w-0 flex-1 truncate text-base text-subtle-foreground"
+          className="min-w-0 flex-1 truncate text-[15px] text-subtle-foreground"
         >
           {meal.text}
         </span>
@@ -44,18 +46,18 @@ export function MealEntryRow({ meal, onEdit, onShowDetail }: MealEntryRowProps) 
         aria-label="Meal details"
         disabled={pending}
         className={cn(
-          "flex w-[68px] shrink-0 items-center justify-end gap-1 text-sm font-bold tabular-nums text-foreground",
+          "font-display flex w-[72px] shrink-0 items-baseline justify-end gap-1 text-[15px] font-bold tabular-nums text-accent",
           (pending || failed) && "text-muted-foreground"
         )}
       >
         {pending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin self-center" />
         ) : failed ? (
-          <AlertCircle className="h-5 w-5 text-destructive" />
+          <AlertCircle className="h-5 w-5 self-center text-destructive" />
         ) : (
           <>
             {meal.calories}
-            <span className="text-[11px] font-semibold text-muted-foreground">kcal</span>
+            <span className="text-[10px] font-semibold text-muted-foreground">kcal</span>
           </>
         )}
       </button>

@@ -38,13 +38,13 @@ function DeltaChip({ label, value }: { label: string; value: number | null }) {
       ? "text-muted-foreground"
       : value < 0
         ? "text-accent"
-        : "text-destructive";
+        : "text-red-dark";
   return (
-    <span className="inline-flex items-baseline gap-1.5 rounded-pill bg-subtle px-3 py-1.5">
+    <span className="glass inline-flex items-baseline gap-1.5 rounded-pill px-3 py-1.5">
       <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </span>
-      <span className={cn("text-[13px] font-bold tabular-nums", tone)}>
+      <span className={cn("font-display text-[13px] font-bold tabular-nums", tone)}>
         {deltaText(value)}
       </span>
     </span>
@@ -69,8 +69,13 @@ export default function WeightPage() {
 
   return (
     <div className="editorial-in">
-      <header className="border-b border-hairline py-4">
-        <h1 className="text-[22px] font-bold text-foreground">Weight</h1>
+      <header className="pt-3">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          Trend
+        </p>
+        <h1 className="font-display mt-0.5 text-[34px] font-bold leading-none text-foreground">
+          Weight
+        </h1>
       </header>
 
       {loading ? (
@@ -79,25 +84,33 @@ export default function WeightPage() {
         </div>
       ) : (
         <>
-          <section className="border-b border-hairline py-5">
-            <p className="text-sm text-muted-foreground">Current</p>
+          <section className="glass relative mt-4 overflow-hidden rounded-3xl px-5 py-6">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-16 right-0 h-44 w-44 rounded-full bg-accent/10 blur-3xl"
+            />
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+              Current
+            </p>
             {latest ? (
               <>
-                <p className="mt-1 flex items-baseline gap-1.5 text-[44px] font-extrabold leading-none tabular-nums text-foreground">
+                <p className="font-display mt-2 flex items-baseline gap-1.5 text-[52px] font-bold leading-none tabular-nums text-foreground">
                   {latest.weightKg.toFixed(1)}
-                  <span className="text-[15px] font-semibold text-muted-foreground">kg</span>
+                  <span className="font-sans text-[15px] font-semibold text-muted-foreground">
+                    kg
+                  </span>
                 </p>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-4 flex gap-2">
                   <DeltaChip label="7d" value={delta7} />
                   <DeltaChip label="30d" value={delta30} />
                 </div>
               </>
             ) : (
-              <p className="mt-1 text-[24px] text-muted-foreground">No weight logged yet</p>
+              <p className="mt-1 text-[22px] text-muted-foreground">No weight logged yet</p>
             )}
           </section>
 
-          <section className="border-b border-hairline py-4">
+          <section className="py-5">
             <div className="flex gap-2">
               {RANGES.map(({ label, days }) => {
                 const active = rangeDays === days;
@@ -107,8 +120,10 @@ export default function WeightPage() {
                     type="button"
                     onClick={() => setRangeDays(days)}
                     className={cn(
-                      "rounded-pill px-3.5 py-1.5 text-[13px] font-bold tabular-nums transition-all active:scale-95",
-                      active ? "bg-accent text-accent-foreground" : "bg-subtle text-foreground"
+                      "font-display rounded-pill px-3.5 py-1.5 text-[13px] font-bold tabular-nums transition-all active:scale-95",
+                      active
+                        ? "glow-accent bg-accent text-accent-foreground"
+                        : "glass text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {label}
@@ -121,7 +136,7 @@ export default function WeightPage() {
             </div>
           </section>
 
-          <div className="pt-5">
+          <div>
             <Button variant="accent" size="lg" className="w-full" onClick={() => setLogOpen(true)}>
               <Plus className="h-4 w-4" strokeWidth={2} />
               Log weight

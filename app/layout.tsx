@@ -1,15 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito_Sans, Rubik } from "next/font/google";
+import { Manrope, Rubik, Space_Grotesk } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { AbortErrorSilencer } from "@/components/providers/abort-error-silencer";
 import { VersionWatcher } from "@/components/providers/version-watcher";
 import "./globals.css";
 
-const nunito = Nunito_Sans({
-  variable: "--font-nunito",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const grotesk = Space_Grotesk({
+  variable: "--font-grotesk",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -30,7 +37,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Diet",
   },
 };
@@ -40,10 +47,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAFBFA" },
-    { media: "(prefers-color-scheme: dark)", color: "#0C1310" },
-  ],
+  themeColor: "#0A0E0C",
 };
 
 export default function RootLayout({
@@ -54,7 +58,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${nunito.variable} ${rubik.variable} h-full antialiased`}
+      className={`${manrope.variable} ${grotesk.variable} ${rubik.variable} h-full antialiased`}
     >
       <head>
         <AbortErrorSilencer />

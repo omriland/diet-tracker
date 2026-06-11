@@ -29,7 +29,8 @@
   --color-red-light: var(--red-light);
   --color-red-mid: var(--red-mid);
   --color-red-dark: var(--red-dark);
-  --color-gray-300: #5C6265;
+  --color-water: var(--water);
+  --color-gray-300: #707A74;
 
   /* shadcn compat — mapped to our tokens so legacy primitives still work */
   --color-card: var(--surface);
@@ -41,77 +42,53 @@
   --color-secondary: var(--subtle);
   --color-secondary-foreground: var(--foreground);
 
-  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-hebrew-sans: var(--font-rubik), var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-grotesk), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-hebrew-sans: var(--font-rubik), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
   --radius-pill: 9999px;
 }
 
+/*
+ * MIDNIGHT VOLT — dark-only system.
+ * Deep ink-green canvas, electric lime accent, coral for over-budget.
+ */
 :root {
-  --background: #FAFBFA;
-  --foreground: #132B21;
-  --surface: #FFFFFF;
-  --surface-foreground: #132B21;
-  --elevated: #FFFFFF;
-  --muted: #ECF1EE;
-  --muted-foreground: #5C6B63;
-  --subtle: #E8EFEB;
-  --subtle-foreground: #2C3A33;
-  --border: #D8E1DC;
-  --hairline: #ECF1EE;
-  --input: #E8EFEB;
-  --ring: #132B21;
-  --accent: #132B21;
-  --accent-foreground: #FFFFFF;
-  --accent-soft: rgba(166, 194, 181, 0.45);
-  --destructive: #BF3B44;
-  --destructive-foreground: #FFFFFF;
-  --success: #132B21;
-  --warning: #BF3B44;
+  --background: #0A0E0C;
+  --foreground: #F1F6F0;
+  --surface: #121814;
+  --surface-foreground: #F1F6F0;
+  --elevated: #1A211C;
+  --muted: #151C17;
+  --muted-foreground: #8C9A8F;
+  --subtle: #1B231D;
+  --subtle-foreground: #CFDACE;
+  --border: #242E26;
+  --hairline: #1A211C;
+  --input: #1B231D;
+  --ring: #CDFB51;
+  --accent: #CDFB51;
+  --accent-foreground: #0A0E0C;
+  --accent-soft: rgba(205, 251, 81, 0.16);
+  --destructive: #FF6E62;
+  --destructive-foreground: #1C0905;
+  --success: #CDFB51;
+  --warning: #FF6E62;
 
-  --green-light: #E0EAE5;
-  --green-mid: #A6C2B5;
-  --green-dark: #132B21;
-  --red-light: #F4E6E7;
-  --red-mid: #F3BABD;
-  --red-dark: #BF3B44;
-}
+  /* Calorie semantics: light = tint bg, mid = secondary, dark = the vivid one */
+  --green-light: #1A2312;
+  --green-mid: #8FBE2E;
+  --green-dark: #CDFB51;
+  --red-light: #291311;
+  --red-mid: #B84A40;
+  --red-dark: #FF7A6E;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0C1310;
-    --foreground: #E8F0EB;
-    --surface: #121B16;
-    --surface-foreground: #E8F0EB;
-    --elevated: #17221C;
-    --muted: #18241E;
-    --muted-foreground: #8DA197;
-    --subtle: #1C2A23;
-    --subtle-foreground: #C6D4CC;
-    --border: #27362F;
-    --hairline: #1A2620;
-    --input: #1C2A23;
-    --ring: #A6C2B5;
-    --accent: #A8C8B8;
-    --accent-foreground: #0C1310;
-    --accent-soft: rgba(166, 194, 181, 0.28);
-    --destructive: #E0717B;
-    --destructive-foreground: #14090A;
-    --success: #A8C8B8;
-    --warning: #E0717B;
-
-    --green-light: #15241C;
-    --green-mid: #33523F;
-    --green-dark: #B9D7C7;
-    --red-light: #2A1517;
-    --red-mid: #5C2B2F;
-    --red-dark: #E58993;
-  }
+  --water: #5BD1F5;
 }
 
 @layer base {
@@ -126,12 +103,7 @@
     -webkit-tap-highlight-color: transparent;
     background-color: var(--background);
     color: var(--foreground);
-    color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    html {
-      color-scheme: dark;
-    }
+    color-scheme: dark;
   }
   body {
     background-color: var(--background);
@@ -163,6 +135,73 @@
   }
 }
 
+@layer utilities {
+  /* Big numerals & headings */
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Frosted glass card */
+  .glass {
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.018) 45%,
+      rgba(255, 255, 255, 0.04)
+    );
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+  .glass-strong {
+    background: linear-gradient(
+      165deg,
+      rgba(34, 42, 36, 0.94),
+      rgba(20, 26, 22, 0.97)
+    );
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Electric lime glow */
+  .glow-accent {
+    box-shadow:
+      0 0 18px rgba(205, 251, 81, 0.35),
+      0 0 50px rgba(205, 251, 81, 0.12);
+  }
+  .text-glow {
+    text-shadow: 0 0 24px rgba(205, 251, 81, 0.45);
+  }
+
+  /* Gradient headline text */
+  .text-gradient-volt {
+    background: linear-gradient(120deg, #EFFFC0 0%, #CDFB51 45%, #8FBE2E 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-ember {
+    background: linear-gradient(120deg, #FFD1C4 0%, #FF7A6E 55%, #E04A3C 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Ambient scene glow behind the app shell */
+.ambient-scene {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(42rem 30rem at 85% -8%, rgba(205, 251, 81, 0.085), transparent 60%),
+    radial-gradient(36rem 26rem at -15% 22%, rgba(91, 209, 245, 0.05), transparent 60%),
+    radial-gradient(50rem 36rem at 50% 115%, rgba(143, 190, 46, 0.06), transparent 55%);
+}
+
 @keyframes pulse-dot {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 1; }
@@ -181,12 +220,12 @@
 
 /* Staggered section reveal — set --stagger per section (0, 1, 2, …) */
 @keyframes rise-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .stagger-in {
-  animation: rise-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--stagger, 0) * 50ms);
+  animation: rise-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--stagger, 0) * 60ms);
 }
 
 /* Chart bars grow up from the baseline — set --bar-i per bar for the stagger */
@@ -200,10 +239,70 @@
   animation-delay: calc(var(--bar-i, 0) * 45ms);
 }
 
+/* Floating dock entrance */
+@keyframes dock-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.dock-in {
+  animation: dock-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 120ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .editorial-in,
   .stagger-in,
-  .bar-rise {
+  .bar-rise,
+  .dock-in {
+    animation: none;
+  }
+}
+
+/* ---- Login live-demo loop ---- */
+
+/* Blinking input caret after the typed Hebrew text */
+@keyframes login-caret-blink {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0; }
+}
+.login-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-inline-start: 3px;
+  vertical-align: -0.12em;
+  background: var(--accent);
+  box-shadow: 0 0 6px rgba(205, 251, 81, 0.6);
+  animation: login-caret-blink 0.95s steps(1, end) infinite;
+}
+
+/* "AI thinking" dots */
+@keyframes login-think {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.15); }
+}
+.login-think-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--accent);
+  animation: login-think 1s ease-in-out infinite;
+}
+
+/* Result chip pops in with a slight overshoot */
+@keyframes login-chip-pop {
+  0% { opacity: 0; transform: scale(0.7) translateY(4px); }
+  60% { opacity: 1; transform: scale(1.06) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.login-chip-pop {
+  animation: login-chip-pop 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-caret,
+  .login-think-dot,
+  .login-chip-pop {
     animation: none;
   }
 }
@@ -325,7 +424,7 @@
     105deg,
     var(--accent) 0%,
     var(--accent) 35%,
-    color-mix(in srgb, var(--accent-foreground) 22%, var(--accent)) 50%,
+    color-mix(in srgb, white 35%, var(--accent)) 50%,
     var(--accent) 65%,
     var(--accent) 100%
   );

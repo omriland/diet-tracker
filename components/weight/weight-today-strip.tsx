@@ -24,17 +24,24 @@ export function WeightTodayStrip({ uid }: WeightTodayStripProps) {
   return (
     <Link
       href="/weight"
-      className="flex items-center justify-between border-b border-hairline py-3"
+      className="glass mt-3 flex items-center justify-between rounded-2xl px-3.5 py-3 transition-all active:scale-[0.99]"
     >
-      <span className="text-sm text-muted-foreground">Weight:</span>
+      <span className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Weight
+      </span>
       <span className="flex items-baseline gap-2">
-        <span className="text-[15px] font-bold tabular-nums text-foreground">
+        <span className="font-display text-[15px] font-bold tabular-nums text-foreground">
           {latest.weightKg.toFixed(1)} kg
         </span>
         {showDelta && (
-          <span className={cn("text-sm tabular-nums", dropping ? "text-accent" : "text-destructive")}>
+          <span
+            className={cn(
+              "rounded-pill px-2 py-0.5 text-[12px] font-bold tabular-nums",
+              dropping ? "bg-accent-soft text-accent" : "bg-red-light text-red-dark"
+            )}
+          >
             {dropping ? "" : "+"}
-            {delta7!.toFixed(1)} kg (7d)
+            {delta7!.toFixed(1)} kg · 7d
           </span>
         )}
       </span>

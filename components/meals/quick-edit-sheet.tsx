@@ -80,12 +80,19 @@ function QuickEditForm({
 
   return (
     <div className="flex flex-col gap-5 pb-2">
-      <header className="flex items-center justify-between border-b border-hairline pb-3 pr-10">
-        <h2 className="text-[18px] font-bold text-foreground">Edit entry</h2>
+      <header className="pr-10">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+          Tweak it
+        </p>
+        <h2 className="font-display mt-0.5 text-[24px] font-bold leading-none text-foreground">
+          Edit entry
+        </h2>
       </header>
 
       <div className="flex flex-col gap-2">
-        <label className="text-[15px] font-bold text-foreground">What did you eat?</label>
+        <label className="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+          What you ate
+        </label>
         <textarea
           ref={textareaRef}
           dir="auto"
@@ -93,21 +100,30 @@ function QuickEditForm({
           rows={4}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="w-full resize-none rounded-xl bg-subtle p-4 text-[15px] leading-snug text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
+          className="w-full resize-none rounded-2xl bg-white/5 p-4 text-[15px] leading-snug text-foreground outline-none ring-1 ring-white/10 transition-shadow focus:ring-2 focus:ring-accent"
         />
-        <p className="text-xs text-muted-foreground">Editing text will re-run the AI estimate.</p>
+        <p className="text-xs text-muted-foreground">
+          Changing the text re-runs the AI estimate.
+        </p>
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-[15px] font-bold text-foreground">Calories</label>
-        <input
-          type="number"
-          inputMode="numeric"
-          value={cal}
-          onChange={(e) => setCal(e.target.value)}
-          className="w-full rounded-xl bg-subtle px-4 py-3 text-[17px] tabular-nums text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
-        />
-        <p className="text-xs text-muted-foreground">Override the calorie count manually.</p>
+        <label className="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+          Calories
+        </label>
+        <div className="relative">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={cal}
+            onChange={(e) => setCal(e.target.value)}
+            className="font-display w-full rounded-2xl bg-white/5 px-4 py-3 pr-14 text-[20px] font-bold tabular-nums text-foreground outline-none ring-1 ring-white/10 transition-shadow focus:ring-2 focus:ring-accent"
+          />
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+            kcal
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground">Setting a number overrides the estimate.</p>
       </div>
 
       <Button

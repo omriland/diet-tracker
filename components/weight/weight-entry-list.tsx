@@ -20,11 +20,11 @@ function WeightRow({
   onDelete: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-subtle px-4 py-3">
+    <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
       <span className="flex-1 text-[14px] text-muted-foreground">
         {formatMonthDay(entry.date)}, {formatYear(entry.date)}
       </span>
-      <span className="text-[15px] font-bold tabular-nums text-foreground">
+      <span className="font-display text-[15px] font-bold tabular-nums text-foreground">
         {entry.weightKg.toFixed(1)} kg
       </span>
       <button

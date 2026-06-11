@@ -11,24 +11,31 @@ function StatCard({
   n,
   c,
   tone,
+  stagger,
 }: {
   n: string;
   c: string;
   tone?: "good" | "bad";
+  stagger: number;
 }) {
   return (
     <div
-      className={cn(
-        "rounded-xl p-4 text-center",
-        tone === "good"
-          ? "bg-green-light"
-          : tone === "bad"
-            ? "bg-red-light"
-            : "bg-muted"
-      )}
+      className="glass stagger-in rounded-2xl p-4 text-center"
+      style={{ "--stagger": stagger } as React.CSSProperties}
     >
-      <div className="text-2xl font-extrabold tabular-nums text-foreground">{n}</div>
-      <div className="mt-0.5 text-[13px] text-subtle-foreground">{c}</div>
+      <div
+        className={cn(
+          "font-display text-[26px] font-bold leading-none tabular-nums",
+          tone === "good"
+            ? "text-accent"
+            : tone === "bad"
+              ? "text-red-dark"
+              : "text-foreground"
+        )}
+      >
+        {n}
+      </div>
+      <div className="mt-1.5 text-[12px] font-medium text-muted-foreground">{c}</div>
     </div>
   );
 }
@@ -50,37 +57,56 @@ export function StatsView() {
 
   return (
     <div className="editorial-in">
-      <div
-        className={cn(
-          "-mx-5 rounded-b-2xl px-5 py-8 text-center",
-          good ? "bg-green-light" : "bg-red-light"
-        )}
-      >
-        <div className="text-[56px] font-extrabold leading-none tabular-nums text-foreground">
+      <header className="pt-3">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          Your numbers
+        </p>
+        <h1 className="font-display mt-0.5 text-[34px] font-bold leading-none text-foreground">
+          Stats
+        </h1>
+      </header>
+
+      <section className="glass relative mt-4 overflow-hidden rounded-3xl px-5 py-8 text-center">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-20 left-1/2 h-52 w-52 -translate-x-1/2 rounded-full blur-3xl"
+          style={{
+            backgroundColor: good
+              ? "rgba(205, 251, 81, 0.14)"
+              : "rgba(255, 122, 110, 0.14)",
+          }}
+        />
+        <div
+          className={cn(
+            "font-display relative text-[72px] font-bold leading-none tabular-nums",
+            good ? "text-gradient-volt" : "text-gradient-ember"
+          )}
+        >
           {stats.pctDaysOnTarget}%
         </div>
-        <div className="mt-1 text-sm text-subtle-foreground">
+        <div className="relative mt-2 text-sm font-medium text-muted-foreground">
           of logged days within your calorie target
         </div>
-      </div>
+      </section>
 
-      <div className="mt-6">
+      <div className="mt-4">
         <WeeklyCaloriesChart entries={weekEntries} today={today} />
       </div>
 
-      <h2 className="mt-6 text-center text-[13px] font-extrabold uppercase tracking-wide text-muted-foreground">
+      <h2 className="mt-7 text-[12px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
         General statistics
       </h2>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <StatCard n={`${streaks.current} days`} c="current streak" tone="good" />
-        <StatCard n={`${streaks.best} days`} c="best streak" />
-        <StatCard n={String(stats.daysOnTarget)} c="days on target" tone="good" />
-        <StatCard n={String(stats.daysOverTarget)} c="days over target" tone="bad" />
-        <StatCard n={String(stats.mealsLogged)} c="meals logged" />
+      <div className="mt-3 grid grid-cols-2 gap-2.5">
+        <StatCard n={`${streaks.current}`} c="day streak" tone="good" stagger={0} />
+        <StatCard n={`${streaks.best}`} c="best streak" stagger={1} />
+        <StatCard n={String(stats.daysOnTarget)} c="days on target" tone="good" stagger={2} />
+        <StatCard n={String(stats.daysOverTarget)} c="days over target" tone="bad" stagger={3} />
+        <StatCard n={String(stats.mealsLogged)} c="meals logged" stagger={4} />
         <StatCard
           n={stats.avgCaloriesPerDay.toLocaleString()}
           c="avg kcal per day"
+          stagger={5}
         />
       </div>
     </div>

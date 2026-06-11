@@ -1,10 +1,10 @@
 # Active Context
 
-**Last updated:** 27 May 2026
+**Last updated:** 11 Jun 2026
 
 ## Current phase
 
-**Daily-Diet redesign** — On branch `redesign/daily-diet`: full visual reskin to the Rocketseat "Daily Diet" system (Nunito Sans + Rubik, green/red calorie semantics, Figma meal rows + hero, Statistics screen, FAB + drag-and-drop slot moves). Needs iPhone Safari gesture testing (DnD long-press vs day swipe) before merge to `main`.
+**"Midnight Volt" redesign** — Uncommitted on `main`: dark-only system (ink-green bg, electric lime accent, Space Grotesk numerals, glass surfaces, floating dock with center add button, 270° tick gauge, week-strip day nav). Needs iPhone Safari pass (dock safe-area, week-strip taps vs day swipe, water overlay) before commit.
 
 **v1 complete** — App built; ready for Firebase rules deploy and daily use.
 
