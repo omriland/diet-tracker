@@ -89,7 +89,7 @@ function AddMealForm({
               type="button"
               data-active={slot === s}
               onClick={() => setSlot(s)}
-              className="flex-1 rounded-pill bg-subtle px-2 py-2 text-[13px] font-semibold text-foreground transition-colors data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+              className="flex-1 rounded-pill bg-subtle px-2 py-2 text-[13px] font-semibold text-foreground transition-all active:scale-95 data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
             >
               {label}
             </button>
@@ -113,7 +113,7 @@ function AddMealForm({
               void handleAdd();
             }
           }}
-          className="w-full resize-none rounded-xl bg-subtle p-4 text-[15px] leading-snug text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
+          className="w-full resize-none rounded-xl bg-subtle p-4 text-base leading-snug text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
         />
         <p className="text-xs text-muted-foreground">Type in Hebrew for AI calorie estimation</p>
       </div>

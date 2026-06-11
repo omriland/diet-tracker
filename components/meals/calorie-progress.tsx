@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
 
 interface CalorieHeroProps {
   consumed: number;
@@ -13,6 +14,8 @@ interface CalorieHeroProps {
 export function CalorieHero({ consumed, target, remaining, action }: CalorieHeroProps) {
   const over = consumed > target;
   const pct = target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
+  // Lead with the actionable number: what's left in the budget (or how far over).
+  const heroValue = useAnimatedNumber(over ? consumed - target : Math.max(0, remaining));
 
   return (
     <section
@@ -28,15 +31,14 @@ export function CalorieHero({ consumed, target, remaining, action }: CalorieHero
           over ? "text-red-dark" : "text-green-dark"
         )}
       >
-        Calories today
+        {over ? "Over budget" : "Remaining today"}
       </p>
-      <p className="mt-1 text-[40px] font-extrabold leading-none tabular-nums text-foreground">
-        {consumed.toLocaleString()}
+      <p className="mt-1 flex items-baseline gap-1.5 text-[40px] font-extrabold leading-none tabular-nums text-foreground">
+        {heroValue.toLocaleString()}
+        <span className="text-[15px] font-bold text-subtle-foreground/70">kcal</span>
       </p>
-      <p className="mt-1 text-sm tabular-nums text-subtle-foreground">
-        {over
-          ? `${(consumed - target).toLocaleString()} kcal over · target ${target.toLocaleString()}`
-          : `${remaining.toLocaleString()} kcal remaining · target ${target.toLocaleString()}`}
+      <p className="mt-1.5 text-sm tabular-nums text-subtle-foreground">
+        {consumed.toLocaleString()} of {target.toLocaleString()} kcal eaten
       </p>
       <div
         className={cn(
@@ -46,7 +48,7 @@ export function CalorieHero({ consumed, target, remaining, action }: CalorieHero
       >
         <div
           className={cn(
-            "h-full rounded-full transition-[width] duration-500",
+            "h-full rounded-full transition-[width] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
             over ? "bg-red-dark" : "bg-green-dark"
           )}
           style={{ width: `${pct}%` }}

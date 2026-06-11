@@ -72,21 +72,15 @@ export function StatsView() {
         General statistics
       </h2>
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mt-4 grid grid-cols-2 gap-3">
         <StatCard n={`${streaks.current} days`} c="current streak" tone="good" />
         <StatCard n={`${streaks.best} days`} c="best streak" />
+        <StatCard n={String(stats.daysOnTarget)} c="days on target" tone="good" />
+        <StatCard n={String(stats.daysOverTarget)} c="days over target" tone="bad" />
         <StatCard n={String(stats.mealsLogged)} c="meals logged" />
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <StatCard n={String(stats.daysOnTarget)} c="days on target" tone="good" />
-          </div>
-          <div className="flex-1">
-            <StatCard n={String(stats.daysOverTarget)} c="days over target" tone="bad" />
-          </div>
-        </div>
         <StatCard
-          n={`${stats.avgCaloriesPerDay.toLocaleString()} kcal`}
-          c="average per day"
+          n={stats.avgCaloriesPerDay.toLocaleString()}
+          c="avg kcal per day"
         />
       </div>
     </div>

@@ -33,6 +33,7 @@ import { SPORT_BONUS_KCAL } from "@/types/day-meta";
 import { DEFAULT_SPORT_BONUS, DEFAULT_WATER_TARGET_ML } from "@/types/user";
 import {
   addDaysToDateString,
+  getJerusalemDateString,
   subtractDaysFromDateString,
 } from "@/lib/dates/jerusalem";
 import {
@@ -68,6 +69,7 @@ export function DayView({ date }: DayViewProps) {
   const { streak } = useStreak(uid);
 
   const [addOpen, setAddOpen] = useState(false);
+  const [addSlot, setAddSlot] = useState<MealSlot | null>(null);
   const [quickEditMealId, setQuickEditMealId] = useState<string | null>(null);
   const [detailMealId, setDetailMealId] = useState<string | null>(null);
   const [celebrating, setCelebrating] = useState(false);
@@ -155,12 +157,18 @@ export function DayView({ date }: DayViewProps) {
     void runEstimateAfterEdit(mealId, text, slot);
   }
 
+  function openAddSheet(slot: MealSlot | null) {
+    setAddSlot(slot);
+    setAddOpen(true);
+  }
+
   return (
-    <div {...handlers} className="editorial-in">
+    <div {...handlers}>
       <DayHeader
         date={date}
         onPrev={() => goToDate(subtractDaysFromDateString(date, 1))}
         onNext={() => goToDate(addDaysToDateString(date, 1))}
+        onToday={() => goToDate(getJerusalemDateString())}
       />
 
       {loading ? (
@@ -169,44 +177,51 @@ export function DayView({ date }: DayViewProps) {
         </div>
       ) : (
         <>
-          <CalorieHero
-            consumed={consumed}
-            target={target}
-            remaining={remaining}
-            action={
-              uid && (
-                <SportToggle
-                  uid={uid}
-                  date={date}
-                  active={Boolean(meta?.sport)}
-                  bonusKcal={meta?.sportBonusKcal ?? SPORT_BONUS_KCAL}
-                  defaultBonus={profile?.defaultSportBonus ?? DEFAULT_SPORT_BONUS}
-                />
-              )
-            }
-          />
-          {uid && <WeightTodayStrip uid={uid} />}
-          {uid && (
-            <WaterStrip
-              uid={uid}
-              date={date}
-              waterMl={meta?.waterMl ?? 0}
-              targetMl={profile?.waterTargetMl ?? DEFAULT_WATER_TARGET_ML}
+          <div className="stagger-in" style={{ "--stagger": 0 } as React.CSSProperties}>
+            <CalorieHero
+              consumed={consumed}
+              target={target}
+              remaining={remaining}
+              action={
+                uid && (
+                  <SportToggle
+                    uid={uid}
+                    date={date}
+                    active={Boolean(meta?.sport)}
+                    bonusKcal={meta?.sportBonusKcal ?? SPORT_BONUS_KCAL}
+                    defaultBonus={profile?.defaultSportBonus ?? DEFAULT_SPORT_BONUS}
+                  />
+                )
+              }
             />
-          )}
-
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            {MEAL_SLOTS.map(({ slot, label }) => (
-              <MealSlotSection
-                key={slot}
-                slot={slot}
-                label={label}
-                meals={bySlot[slot]}
-                onSelectMeal={(meal) => setQuickEditMealId(meal.id)}
-                onShowDetail={(meal) => setDetailMealId(meal.id)}
+          </div>
+          <div className="stagger-in" style={{ "--stagger": 1 } as React.CSSProperties}>
+            {uid && <WeightTodayStrip uid={uid} />}
+            {uid && (
+              <WaterStrip
+                uid={uid}
+                date={date}
+                waterMl={meta?.waterMl ?? 0}
+                targetMl={profile?.waterTargetMl ?? DEFAULT_WATER_TARGET_ML}
               />
-            ))}
-          </DndContext>
+            )}
+          </div>
+
+          <div className="stagger-in" style={{ "--stagger": 2 } as React.CSSProperties}>
+            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+              {MEAL_SLOTS.map(({ slot, label }) => (
+                <MealSlotSection
+                  key={slot}
+                  slot={slot}
+                  label={label}
+                  meals={bySlot[slot]}
+                  onSelectMeal={(meal) => setQuickEditMealId(meal.id)}
+                  onShowDetail={(meal) => setDetailMealId(meal.id)}
+                  onAddMeal={(s) => openAddSheet(s)}
+                />
+              ))}
+            </DndContext>
+          </div>
 
           {uid && (
             <DoneLoggingButton
@@ -221,13 +236,13 @@ export function DayView({ date }: DayViewProps) {
             <StreakCelebration streak={streak} onClose={() => setCelebrating(false)} />
           )}
 
-          <AddMealFab onClick={() => setAddOpen(true)} />
+          <AddMealFab onClick={() => openAddSheet(null)} />
         </>
       )}
 
       <AddMealSheet
         open={addOpen}
-        defaultSlot={null}
+        defaultSlot={addSlot}
         uid={uid}
         onOpenChange={setAddOpen}
         onConfirm={handleConfirmAdd}

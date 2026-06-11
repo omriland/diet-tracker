@@ -61,6 +61,12 @@ function SheetContent({
         )}
         {...props}
       >
+        {side === "bottom" && (
+          <div
+            aria-hidden
+            className="bg-border mx-auto -mt-2 mb-0.5 h-1.5 w-10 shrink-0 rounded-full"
+          />
+        )}
         {children}
         {showCloseButton && (
           <SheetPrimitive.Close

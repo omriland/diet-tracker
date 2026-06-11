@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FirebaseError } from "firebase/app";
 import { toast } from "sonner";
@@ -53,7 +54,15 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-10 bg-background px-6">
-      <div className="text-center">
+      <div className="editorial-in text-center">
+        <Image
+          src="/icon.svg"
+          alt=""
+          width={72}
+          height={72}
+          priority
+          className="mx-auto mb-5 rounded-2xl shadow-lg shadow-foreground/15"
+        />
         <h1 className="text-[32px] font-bold leading-none text-foreground">Diet</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           A quiet calorie & weight journal

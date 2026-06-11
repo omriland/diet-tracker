@@ -25,16 +25,30 @@ const RANGES = [
   { label: "ALL", days: null as number | null },
 ] as const;
 
-function deltaClass(value: number | null): string {
-  if (value == null || value === 0) return "text-muted-foreground";
-  return value < 0 ? "text-accent" : "text-destructive";
-}
-
 function deltaText(value: number | null): string {
   if (value == null) return "—";
   if (value === 0) return "0 kg";
   const sign = value < 0 ? "-" : "+";
   return `${sign}${Math.abs(value).toFixed(1)} kg`;
+}
+
+function DeltaChip({ label, value }: { label: string; value: number | null }) {
+  const tone =
+    value == null || value === 0
+      ? "text-muted-foreground"
+      : value < 0
+        ? "text-accent"
+        : "text-destructive";
+  return (
+    <span className="inline-flex items-baseline gap-1.5 rounded-pill bg-subtle px-3 py-1.5">
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </span>
+      <span className={cn("text-[13px] font-bold tabular-nums", tone)}>
+        {deltaText(value)}
+      </span>
+    </span>
+  );
 }
 
 export default function WeightPage() {
@@ -68,27 +82,19 @@ export default function WeightPage() {
           <section className="border-b border-hairline py-5">
             <p className="text-sm text-muted-foreground">Current</p>
             {latest ? (
-              <p className="mt-1 text-[36px] font-bold leading-none tabular-nums text-foreground">
-                {latest.weightKg.toFixed(1)} kg
-              </p>
+              <>
+                <p className="mt-1 flex items-baseline gap-1.5 text-[36px] font-bold leading-none tabular-nums text-foreground">
+                  {latest.weightKg.toFixed(1)}
+                  <span className="text-[15px] font-semibold text-muted-foreground">kg</span>
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <DeltaChip label="7d" value={delta7} />
+                  <DeltaChip label="30d" value={delta30} />
+                </div>
+              </>
             ) : (
               <p className="mt-1 text-[24px] text-muted-foreground">No weight logged yet</p>
             )}
-          </section>
-
-          <section className="grid grid-cols-2 gap-4 border-b border-hairline py-4">
-            <div>
-              <p className="text-sm text-muted-foreground">vs. 7 days ago</p>
-              <p className={cn("mt-1 text-[17px] font-bold tabular-nums", deltaClass(delta7))}>
-                {deltaText(delta7)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">vs. 30 days ago</p>
-              <p className={cn("mt-1 text-[17px] font-bold tabular-nums", deltaClass(delta30))}>
-                {deltaText(delta30)}
-              </p>
-            </div>
           </section>
 
           <section className="border-b border-hairline py-4">
@@ -101,7 +107,7 @@ export default function WeightPage() {
                     type="button"
                     onClick={() => setRangeDays(days)}
                     className={cn(
-                      "rounded-pill px-3.5 py-1.5 text-[13px] font-bold tabular-nums transition-colors",
+                      "rounded-pill px-3.5 py-1.5 text-[13px] font-bold tabular-nums transition-all active:scale-95",
                       active ? "bg-accent text-accent-foreground" : "bg-subtle text-foreground"
                     )}
                   >
@@ -110,10 +116,9 @@ export default function WeightPage() {
                 );
               })}
             </div>
-          </section>
-
-          <section className="border-b border-hairline py-4">
-            <WeightChart data={chartData} />
+            <div className="mt-2">
+              <WeightChart data={chartData} />
+            </div>
           </section>
 
           <div className="pt-5">

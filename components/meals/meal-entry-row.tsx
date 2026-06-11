@@ -19,7 +19,7 @@ export function MealEntryRow({ meal, onEdit, onShowDetail }: MealEntryRowProps) 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-3.5",
+        "flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3.5 shadow-[0_1px_2px_rgba(19,43,33,0.04)] transition-all active:scale-[0.99] active:bg-subtle/40",
         pending && "opacity-70"
       )}
     >
