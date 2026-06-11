@@ -56,7 +56,7 @@ export function StatsView() {
           good ? "bg-green-light" : "bg-red-light"
         )}
       >
-        <div className="text-[44px] font-extrabold leading-none tabular-nums text-foreground">
+        <div className="text-[56px] font-extrabold leading-none tabular-nums text-foreground">
           {stats.pctDaysOnTarget}%
         </div>
         <div className="mt-1 text-sm text-subtle-foreground">

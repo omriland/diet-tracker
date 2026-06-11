@@ -23,12 +23,12 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
 
-  --color-green-light: #E0EAE5;
-  --color-green-mid: #A6C2B5;
-  --color-green-dark: #132B21;
-  --color-red-light: #F4E6E7;
-  --color-red-mid: #F3BABD;
-  --color-red-dark: #BF3B44;
+  --color-green-light: var(--green-light);
+  --color-green-mid: var(--green-mid);
+  --color-green-dark: var(--green-dark);
+  --color-red-light: var(--red-light);
+  --color-red-mid: var(--red-mid);
+  --color-red-dark: var(--red-dark);
   --color-gray-300: #5C6265;
 
   /* shadcn compat — mapped to our tokens so legacy primitives still work */
@@ -73,6 +73,45 @@
   --destructive-foreground: #FFFFFF;
   --success: #132B21;
   --warning: #BF3B44;
+
+  --green-light: #E0EAE5;
+  --green-mid: #A6C2B5;
+  --green-dark: #132B21;
+  --red-light: #F4E6E7;
+  --red-mid: #F3BABD;
+  --red-dark: #BF3B44;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0C1310;
+    --foreground: #E8F0EB;
+    --surface: #121B16;
+    --surface-foreground: #E8F0EB;
+    --elevated: #17221C;
+    --muted: #18241E;
+    --muted-foreground: #8DA197;
+    --subtle: #1C2A23;
+    --subtle-foreground: #C6D4CC;
+    --border: #27362F;
+    --hairline: #1A2620;
+    --input: #1C2A23;
+    --ring: #A6C2B5;
+    --accent: #A8C8B8;
+    --accent-foreground: #0C1310;
+    --accent-soft: rgba(166, 194, 181, 0.28);
+    --destructive: #E0717B;
+    --destructive-foreground: #14090A;
+    --success: #A8C8B8;
+    --warning: #E0717B;
+
+    --green-light: #15241C;
+    --green-mid: #33523F;
+    --green-dark: #B9D7C7;
+    --red-light: #2A1517;
+    --red-mid: #5C2B2F;
+    --red-dark: #E58993;
+  }
 }
 
 @layer base {
@@ -87,6 +126,12 @@
     -webkit-tap-highlight-color: transparent;
     background-color: var(--background);
     color: var(--foreground);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    html {
+      color-scheme: dark;
+    }
   }
   body {
     background-color: var(--background);
@@ -144,9 +189,21 @@
   animation-delay: calc(var(--stagger, 0) * 50ms);
 }
 
+/* Chart bars grow up from the baseline — set --bar-i per bar for the stagger */
+@keyframes bar-rise {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.bar-rise {
+  transform-origin: bottom;
+  animation: bar-rise 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--bar-i, 0) * 45ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .editorial-in,
-  .stagger-in {
+  .stagger-in,
+  .bar-rise {
     animation: none;
   }
 }

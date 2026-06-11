@@ -21,7 +21,7 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
         angle,
         startVelocity: 45,
         gravity: 0.9,
-        colors: ["#132B21", "#A6C2B5", "#E0EAE5", "#BF3B44", "#132B21"],
+        colors: ["#5F8573", "#A6C2B5", "#E0EAE5", "#BF3B44", "#33523F"],
       });
 
     const t = setTimeout(() => {
@@ -59,7 +59,7 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/95"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95"
       onClick={onClose}
     >
       <div className="pointer-events-none flex select-none flex-col items-center gap-3">

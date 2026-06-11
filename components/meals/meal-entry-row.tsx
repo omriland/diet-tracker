@@ -29,7 +29,7 @@ export function MealEntryRow({ meal, onEdit, onShowDetail }: MealEntryRowProps) 
         className="flex min-w-0 flex-1 items-center gap-3 text-start"
       >
         <span className="shrink-0 text-xs font-bold tabular-nums text-foreground">{time}</span>
-        <span className="h-3.5 w-px shrink-0 bg-gray-400" aria-hidden />
+        <span className="h-3.5 w-px shrink-0 bg-border" aria-hidden />
         <span
           dir="auto"
           lang="he"

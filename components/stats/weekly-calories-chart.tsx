@@ -30,7 +30,7 @@ export function WeeklyCaloriesChart({
       </p>
 
       <div className="mt-3 flex gap-1.5" style={{ height: "8rem" }}>
-        {entries.map((entry) => {
+        {entries.map((entry, index) => {
           const consumedPct = Math.min((entry.consumed / maxVal) * 100, 100);
           const targetPct = Math.min((entry.target / maxVal) * 100, 100);
           const isToday = entry.date === today;
@@ -52,10 +52,15 @@ export function WeeklyCaloriesChart({
                 {hasData && (
                   <div
                     className={cn(
-                      "absolute bottom-0 w-full rounded-lg transition-[height] duration-500",
+                      "bar-rise absolute bottom-0 w-full rounded-lg transition-[height] duration-500",
                       over ? "bg-red-dark" : "bg-green-dark"
                     )}
-                    style={{ height: `max(${consumedPct}%, 0.5rem)` }}
+                    style={
+                      {
+                        height: `max(${consumedPct}%, 0.5rem)`,
+                        "--bar-i": index,
+                      } as React.CSSProperties
+                    }
                   />
                 )}
 

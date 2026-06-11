@@ -83,7 +83,7 @@ export default function WeightPage() {
             <p className="text-sm text-muted-foreground">Current</p>
             {latest ? (
               <>
-                <p className="mt-1 flex items-baseline gap-1.5 text-[36px] font-bold leading-none tabular-nums text-foreground">
+                <p className="mt-1 flex items-baseline gap-1.5 text-[44px] font-extrabold leading-none tabular-nums text-foreground">
                   {latest.weightKg.toFixed(1)}
                   <span className="text-[15px] font-semibold text-muted-foreground">kg</span>
                 </p>
